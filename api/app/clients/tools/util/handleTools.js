@@ -13,7 +13,6 @@ const {
   WolframAlphaAPI,
   OpenAICreateImage,
   StableDiffusionAPI,
-  DrupalFAAPI,
   // Structured Tools
   DALLE3,
   E2BTools,
@@ -24,7 +23,8 @@ const {
   TraversaalSearch,
   StructuredWolfram,
   TavilySearchResults,
-  StructuredDrupalFAAPI,
+  DrupalFAAPI,
+  VtigerFAAPI,
 } = require('../');
 const { loadToolSuite } = require('./loadToolSuite');
 const { loadSpecs } = require('./loadSpecs');
@@ -169,7 +169,8 @@ const loadTools = async ({
     'azure-ai-search': functions ? StructuredACS : AzureAISearch,
     CodeBrew: CodeBrew,
     traversaal_search: TraversaalSearch,
-    drupal_fa_api: functions ? StructuredDrupalFAAPI : DrupalFAAPI,
+    drupal_fa_api: DrupalFAAPI,
+    vtiger_fa_api: VtigerFAAPI,
   };
 
   const openAIApiKey = await getOpenAIKey(options, user);

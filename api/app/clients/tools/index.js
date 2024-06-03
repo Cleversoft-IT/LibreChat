@@ -6,7 +6,6 @@ const AzureAiSearch = require('./AzureAiSearch');
 const OpenAICreateImage = require('./DALL-E');
 const StableDiffusionAPI = require('./StableDiffusion');
 const SelfReflectionTool = require('./SelfReflection');
-const DrupalFAAPI = require('./DrupalFA');
 
 // Structured Tools
 const DALLE3 = require('./structured/DALLE3');
@@ -20,7 +19,8 @@ const GoogleSearchAPI = require('./structured/GoogleSearch');
 const StructuredWolfram = require('./structured/Wolfram');
 const TavilySearchResults = require('./structured/TavilySearchResults');
 const TraversaalSearch = require('./structured/TraversaalSearch');
-const StructuredDrupalFAAPI = require('./structured/DrupalFA');
+const DrupalFAAPI = require('./structured/DrupalFA');
+const VtigerFAAPI = require('./structured/VtigerFA');
 
 module.exports = {
   availableTools,
@@ -32,7 +32,6 @@ module.exports = {
   OpenAICreateImage,
   StableDiffusionAPI,
   SelfReflectionTool,
-  DrupalFAAPI,
   // Structured Tools
   DALLE3,
   ChatTool,
@@ -44,5 +43,6 @@ module.exports = {
   StructuredWolfram,
   TavilySearchResults,
   TraversaalSearch,
-  StructuredDrupalFAAPI,
+  DrupalFAAPI,
+  VtigerFAAPI,
 };
