@@ -6,6 +6,15 @@ const { logger } = require('~/config');
 const router = express.Router();
 const emailLoginEnabled =
   process.env.ALLOW_EMAIL_LOGIN === undefined || isEnabled(process.env.ALLOW_EMAIL_LOGIN);
+const passwordResetEnabled = isEnabled(process.env.ALLOW_PASSWORD_RESET);
+
+const sharedLinksEnabled =
+  process.env.ALLOW_SHARED_LINKS === undefined || isEnabled(process.env.ALLOW_SHARED_LINKS);
+
+const publicSharedLinksEnabled =
+  sharedLinksEnabled &&
+  (process.env.ALLOW_SHARED_LINKS_PUBLIC === undefined ||
+    isEnabled(process.env.ALLOW_SHARED_LINKS_PUBLIC));
 
 router.get('/', async function (req, res) {
   const isBirthday = () => {
@@ -42,6 +51,7 @@ router.get('/', async function (req, res) {
         !!process.env.EMAIL_USERNAME &&
         !!process.env.EMAIL_PASSWORD &&
         !!process.env.EMAIL_FROM,
+      passwordResetEnabled,
       checkBalance: isEnabled(process.env.CHECK_BALANCE),
       showBirthdayIcon:
         isBirthday() ||
@@ -50,6 +60,9 @@ router.get('/', async function (req, res) {
       helpAndFaqURL: process.env.HELP_AND_FAQ_URL || 'https://librechat.ai',
       interface: req.app.locals.interfaceConfig,
       modelSpecs: req.app.locals.modelSpecs,
+      sharedLinksEnabled,
+      publicSharedLinksEnabled,
+      analyticsGtmId: process.env.ANALYTICS_GTM_ID,
     };
 
     if (typeof process.env.CUSTOM_FOOTER === 'string') {
