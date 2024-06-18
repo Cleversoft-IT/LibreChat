@@ -21,6 +21,7 @@ const TavilySearchResults = require('./structured/TavilySearchResults');
 const TraversaalSearch = require('./structured/TraversaalSearch');
 const DrupalFAAPI = require('./structured/DrupalFA');
 const VtigerFAAPI = require('./structured/VtigerFA');
+const DifyFAAPI = require('./structured/DifyFA');
 
 module.exports = {
   availableTools,
@@ -45,4 +46,5 @@ module.exports = {
   TraversaalSearch,
   DrupalFAAPI,
   VtigerFAAPI,
+  DifyFAAPI,
 };

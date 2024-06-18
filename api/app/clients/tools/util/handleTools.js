@@ -25,6 +25,7 @@ const {
   TavilySearchResults,
   DrupalFAAPI,
   VtigerFAAPI,
+  DifyFAAPI,
 } = require('../');
 const { loadToolSuite } = require('./loadToolSuite');
 const { loadSpecs } = require('./loadSpecs');
@@ -171,6 +172,7 @@ const loadTools = async ({
     traversaal_search: TraversaalSearch,
     drupal_fa_api: DrupalFAAPI,
     vtiger_fa_api: VtigerFAAPI,
+    dify_vtiger_fa_api: DifyFAAPI,
   };
 
   const openAIApiKey = await getOpenAIKey(options, user);
