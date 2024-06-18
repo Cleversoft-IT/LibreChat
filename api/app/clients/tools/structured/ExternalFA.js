@@ -116,29 +116,16 @@ class ExternalFA extends StructuredTool {
 
       logger.info(`[ExternalFAAPI] Response: ${result}`);
 
-      // const json = await response.json();
-      // if (!response.ok) {
-      //   throw new Error(
-      //     `[ExternalFAAPI] Request failed with status code ${response.status}: ${json.error ?? json.message}`,
-      //   );
-      // }
+      const json = JSON.parse(result);
 
-      // //logger.info(`[ExternalFAAPI] Response JSON: ${json}`);      
-
-
-      // if (!json.data) {
-      //   throw new Error('[ExternalFAAPI] Could not parse Vtiger API results. Please try again.');
-      // }
-
-
-      //const result = response.data?.text ?? '';
       const noResponse = '[ExternalFAAPI] No response found in Vtiger API results';
 
-      if (!result) {
+      if (!result || !json || !json.text) {
         return noResponse;
       }
 
-      return result;
+      return json.text;
+
     } catch (error) {
       logger.error('[ExternalFAAPI] API request failed', error);
       return `[ExternalFAAPI] API request failed: ${error.message}`;
