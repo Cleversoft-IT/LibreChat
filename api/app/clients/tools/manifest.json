@@ -202,21 +202,21 @@
     "name": "Drupal Forma Aquae",
     "pluginKey": "drupal_fa_api",
     "description": "Drupal Forma Aquae is a robust search API tailored for LLM Agents. Get an API key here: https://formaaquae.cleversoft.it",
-    "icon": "https://formaaquae.cleversoft.it/images/664fd1c29b4857248e5e91c1/formaaquae-favicon-black-192x192.png",
-    "authConfig": []
-  },
-  {
-    "name": "Vtiger Forma Aquae",
-    "pluginKey": "vtiger_fa_api",
-    "description": "Vtiger Forma Aquae is a robust search API tailored for LLM Agents. Get an API key here: https://formaaquae.cleversoft.it",
-    "icon": "https://formaaquae.cleversoft.it/images/664fd1c29b4857248e5e91c1/formaaquae-favicon-black-192x192.png",
+    "icon": "https://w7.pngwing.com/pngs/917/594/png-transparent-drupal-original-wordmark-logo-icon-thumbnail.png",
     "authConfig": []
   },
   {
     "name": "Dify Vtiger Forma Aquae",
-    "pluginKey": "dify_vtiger_fa_api",
+    "pluginKey": "vtiger_fa_api",
     "description": "Dify Vtiger Forma Aquae is a robust search API tailored for LLM Agents. Get an API key here: https://formaaquae.cleversoft.it",
-    "icon": "https://formaaquae.cleversoft.it/images/664fd1c29b4857248e5e91c1/formaaquae-favicon-black-192x192.png",
+    "icon": "https://icon2.cleanpng.com/20181125/cf/kisspng-vtiger-crm-logo-business-brand-customer-relationsh-customer-relationship-management-system-web-devz-5bfb3ea47bf809.4195674915431922285078.jpg",
+    "authConfig": []
+  },
+  {
+    "name": "Dify Ai Trainer Forma Aquae",
+    "pluginKey": "ai_trainer_fa_api",
+    "description": "Dify Ai Trainer Forma Aquae is a robust search API tailored for LLM Agents. Get an API key here: https://formaaquae.cleversoft.it",
+    "icon": "https://cdn-icons-png.flaticon.com/512/7922/7922268.png",
     "authConfig": []
   }
 ]

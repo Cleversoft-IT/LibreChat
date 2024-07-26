@@ -2,19 +2,18 @@ const axios = require('axios');
 const { z } = require('zod');
 const { StructuredTool } = require('langchain/tools');
 const { logger } = require('~/config');
-const ExternalFA = require('./ExternalFA');
+const DifyFA = require('./DifyFA');
 
-class VtigerFAAPI extends ExternalFA {
+class VtigerFAAPI extends DifyFA {
 
   // Override the constructor to change the name of the tool
   constructor(fields) {
     super(fields);
 
+    this.difyApiKey = this.getEnvVariable('DIFY_VTIGER_API_KEY');
     this.name = 'vtiger_fa_api';
-    this.predictionId = this.getEnvVariable('FLOWISE_VTIGER_PREDICTION_ID');
 
-    // TODO: Change!!
-
+    // TODO: CHANGE!!
     this.description_for_model = `
     // Descrizione:
     // Questo tool è utilizzato per accedere a informazioni aziendali generiche di Forma Aquae come articoli (prodotti aziendali come vasche o lavabi), procedure aziendali e dati non espressamente indicati in altri strumenti. Questo agente fornisce un accesso centralizzato e standardizzato ai contenuti aziendali attraverso l'API di Vtiger.
@@ -30,6 +29,14 @@ class VtigerFAAPI extends ExternalFA {
     `;
     
     this.description = `Uno strumento per interrogare l'API di Vtiger FA. L'input dovrebbe essere un prompt per l'agente per recuperare la query string. L'output sarà la risposta grezza in formato testuale dall'API.`;
+
+    this.schema = z.object({
+      original_prompt: z.string().describe('Il prompt perfetto per ottenere i dati richiesti.'),
+      context: z.string().optional().describe('Contesto ricavato dall\'assistente per la domanda originale. Conciso ed efficace, da utilizzare solo ed esclusivamente se il prompt originale non è sufficiente per rispondere alla domanda. Lasciare vuoto se non necessario.'),
+      data_requested: z.string().optional().describe('Specifica i dati necessari richiesti all\'API per rispondere efficacemente alla domanda originale dell\'utente. Da utilizzare solo ed esclusivamente se il prompt originale non è sufficiente per rispondere alla domanda. Lasciare vuoto se non necessario.'),
+      conversation_id: z.string().describe('Identificativo univoco della conversazione in corso con il tool. Utilizzare per ulteriori messaggi con l\'agente nella conversazione. Non indicare o inventare se nuova conversazione con l\'agente, usare stringa vuota "".'),
+    });
+
   }
 
 }
