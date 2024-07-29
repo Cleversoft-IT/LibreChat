@@ -1,4 +1,5 @@
-import type * as types from '../types';
+import * as types from '../types';
+import * as r from '../roles';
 import {
   Assistant,
   AssistantCreateParams,
@@ -110,6 +111,42 @@ export type UpdateSharedLinkOptions = MutationOptions<
 >;
 export type DeleteSharedLinkOptions = MutationOptions<types.TSharedLink, { shareId: string }>;
 
+export type TUpdatePromptContext =
+  | {
+      group?: types.TPromptGroup;
+      previousListData?: types.PromptGroupListData;
+    }
+  | undefined;
+
+export type UpdatePromptGroupOptions = MutationOptions<
+  types.TUpdatePromptGroupResponse,
+  types.TUpdatePromptGroupVariables,
+  TUpdatePromptContext
+>;
+
+export type CreatePromptOptions = MutationOptions<types.TCreatePromptResponse, types.TCreatePrompt>;
+
+export type DeletePromptOptions = MutationOptions<
+  types.TDeletePromptResponse,
+  types.TDeletePromptVariables
+>;
+
+export type DeletePromptGroupOptions = MutationOptions<
+  types.TDeletePromptGroupResponse,
+  types.TDeletePromptGroupRequest
+>;
+
+export type UpdatePromptLabelOptions = MutationOptions<
+  types.TUpdatePromptLabelsResponse,
+  types.TUpdatePromptLabelsRequest
+>;
+
+export type MakePromptProductionOptions = MutationOptions<
+  types.TMakePromptProductionResponse,
+  types.TMakePromptProductionRequest,
+  TUpdatePromptContext
+>;
+
 /* Auth mutations */
 export type VerifyEmailOptions = MutationOptions<types.VerifyEmailResponse, types.TVerifyEmail>;
 export type ResendVerifcationOptions = MutationOptions<
@@ -122,3 +159,23 @@ export type RegistrationOptions = MutationOptions<
   unknown,
   types.TError
 >;
+
+export type UpdatePromptPermVars = {
+  roleName: string;
+  updates: Partial<r.TPromptPermissions>;
+};
+
+export type UpdatePromptPermResponse = r.TRole;
+
+export type UpdatePromptPermOptions = MutationOptions<
+  UpdatePromptPermResponse,
+  UpdatePromptPermVars,
+  unknown,
+  types.TError
+>;
+
+export type UpdateConversationTagOptions = MutationOptions<
+  types.TConversationTag,
+  types.TConversationTagRequest
+>;
+export type DeleteConversationTagOptions = MutationOptions<types.TConversationTag, string>;
