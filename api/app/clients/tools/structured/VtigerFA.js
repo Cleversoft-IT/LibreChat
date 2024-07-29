@@ -30,11 +30,8 @@ class VtigerFAAPI extends DifyFA {
     
     this.description = `Uno strumento per interrogare l'API di Vtiger FA. L'input dovrebbe essere un prompt per l'agente per recuperare la query string. L'output sarà la risposta grezza in formato testuale dall'API.`;
 
-    this.schema = z.object({
-      original_prompt: z.string().describe('Il prompt perfetto per ottenere i dati richiesti.'),
-      context: z.string().optional().describe('Contesto ricavato dall\'assistente per la domanda originale. Conciso ed efficace, da utilizzare solo ed esclusivamente se il prompt originale non è sufficiente per rispondere alla domanda. Lasciare vuoto se non necessario.'),
-      data_requested: z.string().optional().describe('Specifica i dati necessari richiesti all\'API per rispondere efficacemente alla domanda originale dell\'utente. Da utilizzare solo ed esclusivamente se il prompt originale non è sufficiente per rispondere alla domanda. Lasciare vuoto se non necessario.'),
-      conversation_id: z.string().describe('Identificativo univoco della conversazione in corso con il tool. Utilizzare per ulteriori messaggi con l\'agente nella conversazione. Non indicare o inventare se nuova conversazione con l\'agente, usare stringa vuota "".'),
+    this.schema = this.schema.extend({
+      data_requested: z.string().optional().describe('Specifica i dati necessari richiesti all\'API per rispondere efficacemente alla domanda originale dell\'utente. Da utilizzare solo ed esclusivamente se il prompt non è sufficiente per rispondere alla domanda. Lasciare vuoto se non necessario.'),
     });
 
   }

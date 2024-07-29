@@ -21,7 +21,11 @@ class DifyFA extends StructuredTool {
     //   conversation_id: z.string().optional().describe('Identificativo univoco della conversazione in corso con il tool. Utilizzare per ulteriori messaggi con l\'agente nella conversazione. Non indicare o inventare se prima conversazione con l\'agente.'),
     // });
 
-    this.schema = z.object({});
+    this.schema = z.object({
+      conversation_id: z.string().describe('Identificativo univoco della conversazione in corso con il tool. Utilizzare per ulteriori messaggi con l\'agente nella conversazione. Non indicare o inventare se nuova conversazione con l\'agente, usare stringa vuota "". In caso di diverse conversazioni, scegliere quella corretta in base al ragionamento.'),
+      prompt_for_agent: z.string().describe('Il prompt perfetto del supervisore per l\'agente. Utilizzare questo valore anche per i follow-up con l\'agente, ad esempio per le conferme e le richieste di maggiori informazioni. Non essere conciso, ma chiaro e completo.'),
+    });
+
 
   }
 

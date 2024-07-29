@@ -30,11 +30,10 @@ class AiTrainerFA extends DifyFA {
 
     this.description = `Uno strumento avanzato per ottimizzare le istruzioni operative e i prompt degli assistenti, agenti AI e modelli di linguaggio. Include funzionalità di benchmarking e test di performance.`;
 
-    this.schema = z.object({
-      context: z.string().describe('Un riassunto della conversazione tra ForMe e l\'utente che ha portato al problema segnalato.'),
-      problem: z.string().describe('Descrizione dettagliata del problema segnalato dall\'utente o rilevato durante la conversazione.'),
-      solution: z.string().describe('La soluzione consigliata dall\'utente o il comportamento corretto atteso.'),
-      conversation_id: z.string().describe('Identificativo univoco della conversazione in corso con il tool AI Trainer. Utilizzare questo ID per ulteriori messaggi nella stessa conversazione; usare stringa vuota "" se si tratta di una nuova conversazione.')
+    this.schema = this.schema.extend({
+      context: z.string().optional().describe('Un riassunto della conversazione tra ForMe e l\'utente che ha portato al problema segnalato.'),
+      problem: z.string().optional().describe('Descrizione dettagliata del problema segnalato dall\'utente o rilevato durante la conversazione.'),
+      solution: z.string().optional().describe('La soluzione consigliata dall\'utente o il comportamento corretto atteso.'),
     });
   }
 }
