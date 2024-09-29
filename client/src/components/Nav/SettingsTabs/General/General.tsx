@@ -1,10 +1,10 @@
 import { useRecoilState } from 'recoil';
-import * as Tabs from '@radix-ui/react-tabs';
-import { SettingsTabValues } from 'librechat-data-provider';
-import React, { useContext, useCallback, useRef } from 'react';
+import Cookies from 'js-cookie';
+import React, { useContext, useCallback } from 'react';
 import type { TDangerButtonProps } from '~/common';
-import { ThemeContext, useLocalize, useLocalStorage } from '~/hooks';
+import UserMsgMarkdownSwitch from './UserMsgMarkdownSwitch';
 import HideSidePanelSwitch from './HideSidePanelSwitch';
+import { ThemeContext, useLocalize } from '~/hooks';
 import AutoScrollSwitch from './AutoScrollSwitch';
 import ArchivedChats from './ArchivedChats';
 import { Dropdown } from '~/components/ui';
@@ -34,8 +34,7 @@ export const ThemeSelector = ({
         value={theme}
         onChange={onChange}
         options={themeOptions}
-        sizeClasses="w-[220px]"
-        anchor="bottom start"
+        sizeClasses="w-[180px]"
         testId="theme-selector"
       />
     </div>
@@ -112,7 +111,6 @@ export const LangSelector = ({
         value={langcode}
         onChange={onChange}
         sizeClasses="[--anchor-max-height:256px]"
-        anchor="bottom start"
         options={languageOptions}
       />
     </div>
@@ -123,9 +121,6 @@ function General() {
   const { theme, setTheme } = useContext(ThemeContext);
 
   const [langcode, setLangcode] = useRecoilState(store.lang);
-  const [selectedLang, setSelectedLang] = useLocalStorage('selectedLang', langcode);
-
-  const contentRef = useRef(null);
 
   const changeTheme = useCallback(
     (value: string) => {
@@ -136,46 +131,41 @@ function General() {
 
   const changeLang = useCallback(
     (value: string) => {
-      setSelectedLang(value);
+      let userLang = value;
       if (value === 'auto') {
-        const userLang = navigator.language || navigator.languages[0];
-        setLangcode(userLang);
-        localStorage.setItem('lang', userLang);
-      } else {
-        setLangcode(value);
-        localStorage.setItem('lang', value);
+        userLang = navigator.language || navigator.languages[0];
       }
+
+      requestAnimationFrame(() => {
+        document.documentElement.lang = userLang;
+      });
+      setLangcode(userLang);
+      Cookies.set('lang', userLang, { expires: 365 });
     },
-    [setLangcode, setSelectedLang],
+    [setLangcode],
   );
 
   return (
-    <Tabs.Content
-      value={SettingsTabValues.GENERAL}
-      role="tabpanel"
-      className="w-full md:min-h-[271px]"
-      ref={contentRef}
-    >
-      <div className="flex flex-col gap-3 text-sm text-text-primary">
-        <div className="border-b pb-3 last-of-type:border-b-0 dark:border-gray-600">
-          <ThemeSelector theme={theme} onChange={changeTheme} />
-        </div>
-        <div className="border-b pb-3 last-of-type:border-b-0 dark:border-gray-600">
-          <LangSelector langcode={selectedLang} onChange={changeLang} />
-        </div>
-        <div className="border-b pb-3 last-of-type:border-b-0 dark:border-gray-600">
-          <AutoScrollSwitch />
-        </div>
-        <div className="border-b pb-3 last-of-type:border-b-0 dark:border-gray-600">
-          <HideSidePanelSwitch />
-        </div>
-        <div className="border-b pb-3 last-of-type:border-b-0 dark:border-gray-600">
-          <ArchivedChats />
-        </div>
-        {/* <div className="border-b pb-3 last-of-type:border-b-0 dark:border-gray-600">
-        </div> */}
+    <div className="flex flex-col gap-3 p-1 text-sm text-text-primary">
+      <div className="border-b border-border-light pb-3 last-of-type:border-b-0">
+        <ThemeSelector theme={theme} onChange={changeTheme} />
       </div>
-    </Tabs.Content>
+      <div className="border-b border-border-light pb-3 last-of-type:border-b-0">
+        <LangSelector langcode={langcode} onChange={changeLang} />
+      </div>
+      <div className="border-b border-border-light pb-3 last-of-type:border-b-0">
+        <UserMsgMarkdownSwitch />
+      </div>
+      <div className="border-b border-border-light pb-3 last-of-type:border-b-0">
+        <AutoScrollSwitch />
+      </div>
+      <div className="border-b border-border-light pb-3 last-of-type:border-b-0">
+        <HideSidePanelSwitch />
+      </div>
+      <div className="border-b border-border-light pb-3 last-of-type:border-b-0">
+        <ArchivedChats />
+      </div>
+    </div>
   );
 }
 
