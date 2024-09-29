@@ -2,16 +2,16 @@ const axios = require('axios');
 const { z } = require('zod');
 const { StructuredTool } = require('langchain/tools');
 const { logger } = require('~/config');
-const ExternalFA = require('./ExternalFA');
+const DifyFA = require('./DifyFA');
 
-class DrupalFAAPI extends ExternalFA {
+class DrupalFAAPI extends DifyFA {
 
   // Override the constructor to change the name of the tool
   constructor(fields) {
     super(fields);
 
     this.name = 'drupal_fa_api';
-    this.predictionId = this.getEnvVariable('FLOWISE_DRUPAL_FA_PREDICTION_ID');
+    this.difyApiKey = this.getEnvVariable('DIFY_DRUPAL_API_KEY');
 
     this.description_for_model = `
     // Descrizione:
