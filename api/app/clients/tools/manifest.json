@@ -218,5 +218,12 @@
     "description": "Dify Ai Trainer Forma Aquae is a robust search API tailored for LLM Agents. Get an API key here: https://formaaquae.cleversoft.it",
     "icon": "https://cdn-icons-png.flaticon.com/512/7922/7922268.png",
     "authConfig": []
+  },
+  {
+    "name": "Dify GO Forma Aquae",
+    "pluginKey": "go_fa_api",
+    "description": "Dify GO Forma Aquae is a robust search API tailored for LLM Agents. Get an API key here: https://formaaquae.cleversoft.it",
+    "icon": "https://sp-ao.shortpixel.ai/client/to_auto,q_glossy,ret_img,h_190/https://www.gestionaleopen.org/wp-content/uploads/2022/12/logo-sito-web-1.png",
+    "authConfig": []
   }
 ]

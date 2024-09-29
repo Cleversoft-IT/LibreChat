@@ -26,6 +26,7 @@ const {
   DrupalFAAPI,
   VtigerFAAPI,
   AiTrainerFA,
+  GOFAAPI,
 } = require('../');
 const { loadToolSuite } = require('./loadToolSuite');
 const { loadSpecs } = require('./loadSpecs');
@@ -173,6 +174,7 @@ const loadTools = async ({
     drupal_fa_api: DrupalFAAPI,
     vtiger_fa_api: VtigerFAAPI,
     ai_trainer_fa_api: AiTrainerFA,
+    go_fa_api: GOFAAPI,
   };
 
   const openAIApiKey = await getOpenAIKey(options, user);

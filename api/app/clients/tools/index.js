@@ -22,6 +22,7 @@ const TraversaalSearch = require('./structured/TraversaalSearch');
 const DrupalFAAPI = require('./structured/DrupalFA');
 const VtigerFAAPI = require('./structured/VtigerFA');
 const AiTrainerFA = require('./structured/AiTrainerFA');
+const GOFAAPI = require('./structured/GOFA');
 
 module.exports = {
   availableTools,
@@ -47,4 +48,5 @@ module.exports = {
   DrupalFAAPI,
   VtigerFAAPI,
   AiTrainerFA,
+  GOFAAPI,
 };
