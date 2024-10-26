@@ -225,5 +225,12 @@
     "description": "Dify GO Forma Aquae is a robust search API tailored for LLM Agents. Get an API key here: https://formaaquae.cleversoft.it",
     "icon": "https://sp-ao.shortpixel.ai/client/to_auto,q_glossy,ret_img,h_190/https://www.gestionaleopen.org/wp-content/uploads/2022/12/logo-sito-web-1.png",
     "authConfig": []
+  },
+  {
+    "name": "Dify Marketing expert Forma Aquae",
+    "pluginKey": "marketing_fa_api",
+    "description": "Dify Marketing expert Forma Aquae is a robust search API tailored for LLM Agents. Get an API key here: https://formaaquae.cleversoft.it",
+    "icon": "https://cdn-icons-png.freepik.com/256/5863/5863356.png",
+    "authConfig": []
   }
 ]

@@ -1,7 +1,4 @@
-const axios = require('axios');
 const { z } = require('zod');
-const { StructuredTool } = require('langchain/tools');
-const { logger } = require('~/config');
 const DifyFA = require('./DifyFA');
 
 class AiTrainerFA extends DifyFA {

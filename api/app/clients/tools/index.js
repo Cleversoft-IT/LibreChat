@@ -23,6 +23,7 @@ const DrupalFAAPI = require('./structured/DrupalFA');
 const VtigerFAAPI = require('./structured/VtigerFA');
 const AiTrainerFA = require('./structured/AiTrainerFA');
 const GOFAAPI = require('./structured/GOFA');
+const MarketingFAAPI = require('./structured/MarketingFA');
 
 module.exports = {
   availableTools,
@@ -50,4 +51,5 @@ module.exports = {
   VtigerFAAPI,
   AiTrainerFA,
   GOFAAPI,
+  MarketingFAAPI,
 };

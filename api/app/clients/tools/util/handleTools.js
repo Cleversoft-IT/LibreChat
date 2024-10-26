@@ -27,6 +27,7 @@ const {
   VtigerFAAPI,
   AiTrainerFA,
   GOFAAPI,
+  MarketingFAAPI,
 } = require('../');
 const createFileSearchTool = require('./createFileSearchTool');
 const { loadToolSuite } = require('./loadToolSuite');
@@ -175,6 +176,7 @@ const loadTools = async ({
     vtiger_fa_api: VtigerFAAPI,
     ai_trainer_fa_api: AiTrainerFA,
     go_fa_api: GOFAAPI,
+    marketing_fa_api: MarketingFAAPI,
   };
 
   const customConstructors = {

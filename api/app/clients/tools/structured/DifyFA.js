@@ -1,9 +1,9 @@
 const axios = require('axios').default;
 const { z } = require('zod');
-const { StructuredTool } = require('langchain/tools');
+const { Tool } = require('@langchain/core/tools');
 const { logger } = require('~/config');
 
-class DifyFA extends StructuredTool {
+class DifyFA extends Tool {
   constructor(fields) {
     super();
     this.override = fields.override ?? false;
@@ -52,8 +52,9 @@ class DifyFA extends StructuredTool {
       if (key === 'conversation_id' && query[key] !== '' && query[key] !== ' ') {
         conversationId = query[key];
         continue;
+      } else {
+        questionString += `${key}: \n${query[key]}\n\n`;
       }
-      questionString += `${key}: \n${query[key]}\n\n`;
     }
 
     const body = {
