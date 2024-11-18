@@ -232,5 +232,12 @@
     "description": "Dify Marketing expert Forma Aquae is a robust search API tailored for LLM Agents. Get an API key here: https://formaaquae.cleversoft.it",
     "icon": "https://cdn-icons-png.freepik.com/256/5863/5863356.png",
     "authConfig": []
+  },
+  {
+    "name": "Zilliz retrieval",
+    "pluginKey": "retrieval_fa_api",
+    "description": "Zilliz retrieval is a robust search API tailored for LLM Agents. Get an API key here: https://formaaquae.cleversoft.it",
+    "icon": "https://s3-us-west-2.amazonaws.com/cbi-image-service-prd/original/6926658c-a3d8-44ea-b600-9af7709790da.jpeg",
+    "authConfig": []
   }
 ]

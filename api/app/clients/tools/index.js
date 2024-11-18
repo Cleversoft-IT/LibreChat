@@ -24,6 +24,7 @@ const VtigerFAAPI = require('./structured/VtigerFA');
 const AiTrainerFA = require('./structured/AiTrainerFA');
 const GOFAAPI = require('./structured/GOFA');
 const MarketingFAAPI = require('./structured/MarketingFA');
+const RetrievalFAAPI = require('./structured/RetrievalFA');
 
 module.exports = {
   availableTools,
@@ -52,4 +53,5 @@ module.exports = {
   AiTrainerFA,
   GOFAAPI,
   MarketingFAAPI,
+  RetrievalFAAPI,
 };

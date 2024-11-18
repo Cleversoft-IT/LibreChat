@@ -28,6 +28,7 @@ const {
   AiTrainerFA,
   GOFAAPI,
   MarketingFAAPI,
+  RetrievalFAAPI,
 } = require('../');
 const createFileSearchTool = require('./createFileSearchTool');
 const { loadToolSuite } = require('./loadToolSuite');
@@ -177,6 +178,7 @@ const loadTools = async ({
     ai_trainer_fa_api: AiTrainerFA,
     go_fa_api: GOFAAPI,
     marketing_fa_api: MarketingFAAPI,
+    retrieval_fa_api: RetrievalFAAPI,
   };
 
   const customConstructors = {
