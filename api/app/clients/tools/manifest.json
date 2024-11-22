@@ -239,5 +239,12 @@
     "description": "Zilliz retrieval is a robust search API tailored for LLM Agents. Get an API key here: https://formaaquae.cleversoft.it",
     "icon": "https://s3-us-west-2.amazonaws.com/cbi-image-service-prd/original/6926658c-a3d8-44ea-b600-9af7709790da.jpeg",
     "authConfig": []
+  },
+  {
+    "name": "Vtiger workflow",
+    "pluginKey": "vtiger_workflow_fa_api",
+    "description": "Vtiger workflow is a robust search API tailored for LLM Agents. Get an API key here: https://formaaquae.cleversoft.it",
+    "icon": "https://icon2.cleanpng.com/20181125/cf/kisspng-vtiger-crm-logo-business-brand-customer-relationsh-customer-relationship-management-system-web-devz-5bfb3ea47bf809.4195674915431922285078.jpg",
+    "authConfig": []
   }
 ]
