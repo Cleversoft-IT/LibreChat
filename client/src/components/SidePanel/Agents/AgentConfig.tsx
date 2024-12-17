@@ -18,10 +18,6 @@ import { useToastContext, useFileMapContext } from '~/Providers';
 import { icons } from '~/components/Chat/Menus/Endpoints/Icons';
 import Action from '~/components/SidePanel/Builder/Action';
 import { ToolSelectDialog } from '~/components/Tools';
-<<<<<<< HEAD
-import { useLocalize, useAuthContext } from '~/hooks';
-=======
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
 import { processAgentOption } from '~/utils';
 import AdminSettings from './AdminSettings';
 import { Spinner } from '~/components/svg';
@@ -30,11 +26,7 @@ import AgentAvatar from './AgentAvatar';
 import FileSearch from './FileSearch';
 import ShareAgent from './ShareAgent';
 import AgentTool from './AgentTool';
-<<<<<<< HEAD
-// import CodeForm from './Code/Form';
-=======
 import CodeForm from './Code/Form';
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
 import { Panel } from '~/common';
 
 const labelClass = 'mb-2 text-token-text-primary block font-medium';
@@ -344,12 +336,6 @@ export default function AgentConfig({
             </div>
           </button>
         </div>
-<<<<<<< HEAD
-        {/* Code Execution */}
-        {/* {codeEnabled && <CodeForm agent_id={agent_id} files={code_files} />} */}
-        {/* File Search */}
-        {fileSearchEnabled && <FileSearch agent_id={agent_id} files={knowledge_files} />}
-=======
         {(codeEnabled || fileSearchEnabled) && (
           <div className="mb-4 flex w-full flex-col items-start gap-3">
             <label className="text-token-text-primary block font-medium">
@@ -361,7 +347,6 @@ export default function AgentConfig({
             {fileSearchEnabled && <FileSearch agent_id={agent_id} files={knowledge_files} />}
           </div>
         )}
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
         {/* Agent Tools & Actions */}
         <div className="mb-4">
           <label className={labelClass}>

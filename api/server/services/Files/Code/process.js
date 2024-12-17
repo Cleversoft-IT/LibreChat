@@ -3,18 +3,11 @@ const { v4 } = require('uuid');
 const axios = require('axios');
 const { getCodeBaseURL } = require('@librechat/agents');
 const {
-<<<<<<< HEAD
-  EToolResources,
-  FileContext,
-  imageExtRegex,
-  FileSources,
-=======
   Tools,
   FileContext,
   FileSources,
   imageExtRegex,
   EToolResources,
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
 } = require('librechat-data-provider');
 const { getStrategyFunctions } = require('~/server/services/Files/strategies');
 const { convertImage } = require('~/server/services/Files/images/convert');
@@ -118,9 +111,6 @@ function checkIfActive(dateString) {
 async function getSessionInfo(fileIdentifier, apiKey) {
   try {
     const baseURL = getCodeBaseURL();
-<<<<<<< HEAD
-    const session_id = fileIdentifier.split('/')[0];
-=======
     const [path, queryString] = fileIdentifier.split('?');
     const session_id = path.split('/')[0];
 
@@ -129,16 +119,12 @@ async function getSessionInfo(fileIdentifier, apiKey) {
       queryParams = Object.fromEntries(new URLSearchParams(queryString).entries());
     }
 
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
     const response = await axios({
       method: 'get',
       url: `${baseURL}/files/${session_id}`,
       params: {
         detail: 'summary',
-<<<<<<< HEAD
-=======
         ...queryParams,
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
       },
       headers: {
         'User-Agent': 'LibreChat/1.0',
@@ -147,11 +133,7 @@ async function getSessionInfo(fileIdentifier, apiKey) {
       timeout: 5000,
     });
 
-<<<<<<< HEAD
-    return response.data.find((file) => file.name.startsWith(fileIdentifier))?.lastModified;
-=======
     return response.data.find((file) => file.name.startsWith(path))?.lastModified;
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
   } catch (error) {
     logger.error(`Error fetching session info: ${error.message}`, error);
     return null;
@@ -164,28 +146,14 @@ async function getSessionInfo(fileIdentifier, apiKey) {
  * @param {ServerRequest} options.req
  * @param {Agent['tool_resources']} options.tool_resources
  * @param {string} apiKey
-<<<<<<< HEAD
- * @returns {Promise<Array<{ id: string; session_id: string; name: string }>>}
-=======
  * @returns {Promise<{
  * files: Array<{ id: string; session_id: string; name: string }>,
  * toolContext: string,
  * }>}
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
  */
 const primeFiles = async (options, apiKey) => {
   const { tool_resources } = options;
   const file_ids = tool_resources?.[EToolResources.execute_code]?.file_ids ?? [];
-<<<<<<< HEAD
-  const dbFiles = await getFiles({ file_id: { $in: file_ids } });
-
-  const files = [];
-  const sessions = new Map();
-  for (const file of dbFiles) {
-    if (file.metadata.fileIdentifier) {
-      const [session_id, id] = file.metadata.fileIdentifier.split('/');
-      const pushFile = () => {
-=======
   const agentResourceIds = new Set(file_ids);
   const resourceFiles = tool_resources?.[EToolResources.execute_code]?.files ?? [];
   const dbFiles = ((await getFiles({ file_id: { $in: file_ids } })) ?? []).concat(resourceFiles);
@@ -211,30 +179,22 @@ const primeFiles = async (options, apiKey) => {
         toolContext += `\n\t- /mnt/data/${file.filename}${
           agentResourceIds.has(file.file_id) ? '' : ' (just attached by user)'
         }`;
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
         files.push({
           id,
           session_id,
           name: file.filename,
         });
       };
-<<<<<<< HEAD
-=======
-
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
       if (sessions.has(session_id)) {
         pushFile();
         continue;
       }
-<<<<<<< HEAD
-=======
 
       let queryParams = {};
       if (queryString) {
         queryParams = Object.fromEntries(new URLSearchParams(queryString).entries());
       }
 
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
       const reuploadFile = async () => {
         try {
           const { getDownloadStream } = getStrategyFunctions(file.source);
@@ -246,10 +206,7 @@ const primeFiles = async (options, apiKey) => {
             req: options.req,
             stream,
             filename: file.filename,
-<<<<<<< HEAD
-=======
             entity_id: queryParams.entity_id,
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
             apiKey,
           });
           await updateFile({ file_id: file.file_id, metadata: { fileIdentifier } });
@@ -277,11 +234,7 @@ const primeFiles = async (options, apiKey) => {
     }
   }
 
-<<<<<<< HEAD
-  return files;
-=======
   return { files, toolContext };
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
 };
 
 module.exports = {

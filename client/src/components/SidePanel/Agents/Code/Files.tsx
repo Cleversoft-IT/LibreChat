@@ -12,10 +12,7 @@ import type { ExtendedFile, AgentForm } from '~/common';
 import { useFileHandling, useLocalize, useLazyEffect } from '~/hooks';
 import FileRow from '~/components/Chat/Input/Files/FileRow';
 import { useGetFileConfig } from '~/data-provider';
-<<<<<<< HEAD
-=======
 import { AttachmentIcon } from '~/components/svg';
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
 import { useChatContext } from '~/Providers';
 
 const tool_resource = EToolResources.execute_code;
@@ -89,11 +86,7 @@ export default function Files({
           <button
             type="button"
             disabled={!agent_id || codeChecked === false}
-<<<<<<< HEAD
-            className="btn btn-neutral border-token-border-light relative h-8 w-full rounded-lg font-medium"
-=======
             className="btn btn-neutral border-token-border-light relative h-9 w-full rounded-lg font-medium"
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
             onClick={handleButtonClick}
           >
             <div className="flex w-full items-center justify-center gap-1">
