@@ -21,6 +21,8 @@ const {
   MarketingFAAPI,
   RetrievalFAAPI,
   VtigerWorkflowFAAPI,
+  GOWorkflowFAAPI,
+  CreateFeedbackWorkflowAPI,
 } = require('../');
 const { primeFiles } = require('~/server/services/Files/Code/process');
 const createFileSearchTool = require('./createFileSearchTool');
@@ -166,9 +168,11 @@ const loadTools = async ({
     vtiger_fa_api: VtigerFAAPI,
     ai_trainer_fa_api: AiTrainerFA,
     go_fa_api: GOFAAPI,
+    go_workflow_fa_api: GOWorkflowFAAPI,
     marketing_fa_api: MarketingFAAPI,
     retrieval_fa_api: RetrievalFAAPI,
     vtiger_workflow_fa_api: VtigerWorkflowFAAPI,
+    create_feedback_workflow_api: CreateFeedbackWorkflowAPI,
     tavily_search_results_json: TavilySearchResults,
   };
 

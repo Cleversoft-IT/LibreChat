@@ -15,6 +15,8 @@ const GOFAAPI = require('./structured/GOFA');
 const MarketingFAAPI = require('./structured/MarketingFA');
 const RetrievalFAAPI = require('./structured/RetrievalFA');
 const VtigerWorkflowFAAPI = require('./structured/VtigerWorkflowFA');
+const GOWorkflowFAAPI = require('./structured/GOWorkflowFA');
+const CreateFeedbackWorkflowAPI = require('./structured/CreateFeedbackWorkflow');
 
 module.exports = {
   availableTools,
@@ -34,4 +36,6 @@ module.exports = {
   MarketingFAAPI,
   RetrievalFAAPI,
   VtigerWorkflowFAAPI,
+  GOWorkflowFAAPI,
+  CreateFeedbackWorkflowAPI,
 };

@@ -23,10 +23,10 @@ class GOFAAPI extends DifyFA {
     // - Altri Dati Generici: Accesso a dati aziendali generici non specificati in altri strumenti.
     //
     // Formato della Risposta:
-    // - L'agente deve restituire i dati in un formato strutturato (yaml o json) che includa solo i dati necessari per l'assistente principale.
+    // - L'agente deve restituire unicamente la query SQL da eseguire per ottenere i dati richiesti.
     `;
     
-    this.description = `Uno strumento per interrogare l'API di GO FA. L'input dovrebbe essere un prompt per l'agente per recuperare la query string. L'output sarà la risposta grezza in formato testuale dall'API.`;
+    this.description = `Uno strumento per interrogare l'API di GO FA. L'input dovrebbe essere un prompt per l'agente per recuperare la query string. L'output sarà la query SQL da eseguire per ottenere i dati richiesti.`;
   }
 
 }

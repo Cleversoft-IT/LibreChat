@@ -187,5 +187,19 @@
     "description": "Vtiger workflow is a robust search API tailored for LLM Agents. Get an API key here: https://formaaquae.cleversoft.it",
     "icon": "https://icon2.cleanpng.com/20181125/cf/kisspng-vtiger-crm-logo-business-brand-customer-relationsh-customer-relationship-management-system-web-devz-5bfb3ea47bf809.4195674915431922285078.jpg",
     "authConfig": []
+  },
+  {
+    "name": "GO workflow",
+    "pluginKey": "go_workflow_fa_api",
+    "description": "GO workflow is a robust search API tailored for LLM Agents. Get an API key here: https://formaaquae.cleversoft.it",
+    "icon": "https://sp-ao.shortpixel.ai/client/to_auto,q_glossy,ret_img,h_190/https://www.gestionaleopen.org/wp-content/uploads/2022/12/logo-sito-web-1.png",
+    "authConfig": []
+  },
+  {
+    "name": "Create Feedback Workflow API",
+    "pluginKey": "create_feedback_workflow_api",
+    "description": "Create Feedback Workflow API is a robust search API tailored for LLM Agents. Get an API key here: https://formaaquae.cleversoft.it",
+    "icon": "https://uxwing.com/wp-content/themes/uxwing/download/hand-gestures/negative-feedback-icon.png",
+    "authConfig": []
   }
 ]
