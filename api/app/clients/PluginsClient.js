@@ -43,6 +43,7 @@ class PluginsClient extends OpenAIClient {
     return {
       artifacts: this.options.artifacts,
       chatGptLabel: this.options.chatGptLabel,
+      modelLabel: this.options.modelLabel,
       promptPrefix: this.options.promptPrefix,
       tools: this.options.tools,
       ...this.modelOptions,
@@ -105,7 +106,7 @@ class PluginsClient extends OpenAIClient {
       chatHistory: new ChatMessageHistory(pastMessages),
     });
 
-    this.tools = await loadTools({
+    const { loadedTools } = await loadTools({
       user,
       model,
       tools: this.options.tools,
@@ -119,11 +120,18 @@ class PluginsClient extends OpenAIClient {
         processFileURL,
         message,
       },
+      useSpecs: true,
     });
 
+<<<<<<< HEAD
     if (this.tools.length === 0) {
+=======
+    if (loadedTools.length === 0) {
+>>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
       return;
     }
+
+    this.tools = loadedTools;
 
     logger.debug('[PluginsClient] Requested Tools', this.options.tools);
     logger.debug(

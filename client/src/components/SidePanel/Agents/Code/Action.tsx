@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { useState } from 'react';
 import { KeyRoundIcon } from 'lucide-react';
 import { AuthType, AgentCapabilities } from 'librechat-data-provider';
@@ -6,11 +7,19 @@ import type { AgentForm } from '~/common';
 import {
   Input,
   OGDialog,
+=======
+import { KeyRoundIcon } from 'lucide-react';
+import { AuthType, AgentCapabilities } from 'librechat-data-provider';
+import { useFormContext, Controller, useWatch } from 'react-hook-form';
+import type { AgentForm } from '~/common';
+import {
+>>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
   Checkbox,
   HoverCard,
   HoverCardContent,
   HoverCardPortal,
   HoverCardTrigger,
+<<<<<<< HEAD
   Button,
 } from '~/components/ui';
 import OGDialogTemplate from '~/components/ui/OGDialogTemplate';
@@ -23,16 +32,43 @@ type ApiKeyFormData = {
   authType?: string | AuthType;
 };
 
+=======
+} from '~/components/ui';
+import { useLocalize, useCodeApiKeyForm } from '~/hooks';
+import { CircleHelpIcon } from '~/components/svg';
+import ApiKeyDialog from './ApiKeyDialog';
+import { ESide } from '~/common';
+
+>>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
 export default function Action({ authType = '', isToolAuthenticated = false }) {
   const localize = useLocalize();
   const methods = useFormContext<AgentForm>();
   const { control, setValue, getValues } = methods;
+<<<<<<< HEAD
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const runCodeIsEnabled = useWatch({ control, name: AgentCapabilities.execute_code });
 
   const { installTool, removeTool } = useAuthCodeTool({ isEntityTool: true });
 
   const { reset, register, handleSubmit } = useForm<ApiKeyFormData>();
+=======
+  const {
+    onSubmit,
+    isDialogOpen,
+    setIsDialogOpen,
+    handleRevokeApiKey,
+    methods: keyFormMethods,
+  } = useCodeApiKeyForm({
+    onSubmit: () => {
+      setValue(AgentCapabilities.execute_code, true, { shouldDirty: true });
+    },
+    onRevoke: () => {
+      setValue(AgentCapabilities.execute_code, false, { shouldDirty: true });
+    },
+  });
+
+  const runCodeIsEnabled = useWatch({ control, name: AgentCapabilities.execute_code });
+>>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
   const isUserProvided = authType === AuthType.USER_PROVIDED;
 
   const handleCheckboxChange = (checked: boolean) => {
@@ -45,6 +81,7 @@ export default function Action({ authType = '', isToolAuthenticated = false }) {
     }
   };
 
+<<<<<<< HEAD
   const onSubmit = (data: { apiKey: string }) => {
     reset();
     installTool(data.apiKey);
@@ -57,6 +94,8 @@ export default function Action({ authType = '', isToolAuthenticated = false }) {
     setIsDialogOpen(false);
   };
 
+=======
+>>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
   return (
     <>
       <HoverCard openDelay={50}>
@@ -87,7 +126,11 @@ export default function Action({ authType = '', isToolAuthenticated = false }) {
               className="form-check-label text-token-text-primary w-full cursor-pointer"
               htmlFor={AgentCapabilities.execute_code}
             >
+<<<<<<< HEAD
               {localize('com_agents_execute_code')}
+=======
+              {localize('com_ui_run_code')}
+>>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
             </label>
           </button>
           <div className="ml-2 flex gap-2">
@@ -104,13 +147,18 @@ export default function Action({ authType = '', isToolAuthenticated = false }) {
             <HoverCardContent side={ESide.Top} className="w-80">
               <div className="space-y-2">
                 <p className="text-sm text-text-secondary">
+<<<<<<< HEAD
                   {/* // TODO: add a Code Interpreter description */}
+=======
+                  {localize('com_agents_code_interpreter')}
+>>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
                 </p>
               </div>
             </HoverCardContent>
           </HoverCardPortal>
         </div>
       </HoverCard>
+<<<<<<< HEAD
       <OGDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <OGDialogTemplate
           className="w-11/12 sm:w-1/4"
@@ -146,6 +194,18 @@ export default function Action({ authType = '', isToolAuthenticated = false }) {
           showCancelButton={true}
         />
       </OGDialog>
+=======
+      <ApiKeyDialog
+        isOpen={isDialogOpen}
+        onSubmit={onSubmit}
+        onRevoke={handleRevokeApiKey}
+        onOpenChange={setIsDialogOpen}
+        register={keyFormMethods.register}
+        isToolAuthenticated={isToolAuthenticated}
+        handleSubmit={keyFormMethods.handleSubmit}
+        isUserProvided={authType === AuthType.USER_PROVIDED}
+      />
+>>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
     </>
   );
 }

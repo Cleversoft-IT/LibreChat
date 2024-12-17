@@ -423,6 +423,7 @@ class OpenAIClient extends BaseClient {
       promptPrefix: this.options.promptPrefix,
       resendFiles: this.options.resendFiles,
       imageDetail: this.options.imageDetail,
+      modelLabel: this.options.modelLabel,
       iconURL: this.options.iconURL,
       greeting: this.options.greeting,
       spec: this.options.spec,
@@ -688,7 +689,7 @@ class OpenAIClient extends BaseClient {
   }
 
   initializeLLM({
-    model = 'gpt-3.5-turbo',
+    model = 'gpt-4o-mini',
     modelName,
     temperature = 0.2,
     presence_penalty = 0,
@@ -793,7 +794,7 @@ class OpenAIClient extends BaseClient {
 
     const { OPENAI_TITLE_MODEL } = process.env ?? {};
 
-    let model = this.options.titleModel ?? OPENAI_TITLE_MODEL ?? 'gpt-3.5-turbo';
+    let model = this.options.titleModel ?? OPENAI_TITLE_MODEL ?? 'gpt-4o-mini';
     if (model === Constants.CURRENT_MODEL) {
       model = this.modelOptions.model;
     }
@@ -838,6 +839,12 @@ class OpenAIClient extends BaseClient {
       this.options.dropParams = azureConfig.groupMap[groupName].dropParams;
       this.options.forcePrompt = azureConfig.groupMap[groupName].forcePrompt;
       this.azure = !serverless && azureOptions;
+      if (serverless === true) {
+        this.options.defaultQuery = azureOptions.azureOpenAIApiVersion
+          ? { 'api-version': azureOptions.azureOpenAIApiVersion }
+          : undefined;
+        this.options.headers['api-key'] = this.apiKey;
+      }
     }
 
     const titleChatCompletion = async () => {
@@ -976,7 +983,7 @@ ${convo}
     let prompt;
 
     // TODO: remove the gpt fallback and make it specific to endpoint
-    const { OPENAI_SUMMARY_MODEL = 'gpt-3.5-turbo' } = process.env ?? {};
+    const { OPENAI_SUMMARY_MODEL = 'gpt-4o-mini' } = process.env ?? {};
     let model = this.options.summaryModel ?? OPENAI_SUMMARY_MODEL;
     if (model === Constants.CURRENT_MODEL) {
       model = this.modelOptions.model;
@@ -1169,6 +1176,10 @@ ${convo}
         opts.defaultHeaders = { ...opts.defaultHeaders, ...this.options.headers };
       }
 
+      if (this.options.defaultQuery) {
+        opts.defaultQuery = this.options.defaultQuery;
+      }
+
       if (this.options.proxy) {
         opts.httpAgent = new HttpsProxyAgent(this.options.proxy);
       }
@@ -1207,6 +1218,12 @@ ${convo}
         this.azure = !serverless && azureOptions;
         this.azureEndpoint =
           !serverless && genAzureChatCompletion(this.azure, modelOptions.model, this);
+        if (serverless === true) {
+          this.options.defaultQuery = azureOptions.azureOpenAIApiVersion
+            ? { 'api-version': azureOptions.azureOpenAIApiVersion }
+            : undefined;
+          this.options.headers['api-key'] = this.apiKey;
+        }
       }
 
       if (this.azure || this.options.azure) {
@@ -1308,6 +1325,14 @@ ${convo}
       /** @type {(value: void | PromiseLike<void>) => void} */
       let streamResolve;
 
+<<<<<<< HEAD
+=======
+      if (this.isO1Model === true && this.azure && modelOptions.stream) {
+        delete modelOptions.stream;
+        delete modelOptions.stop;
+      }
+
+>>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
       if (modelOptions.stream) {
         streamPromise = new Promise((resolve) => {
           streamResolve = resolve;

@@ -16,6 +16,11 @@ const { getCustomEndpointConfig } = require('~/server/services/Config');
 const { loadAgentTools } = require('~/server/services/ToolService');
 const AgentClient = require('~/server/controllers/agents/client');
 const { getModelMaxTokens } = require('~/utils');
+<<<<<<< HEAD
+=======
+const { getAgent } = require('~/models/Agent');
+const { logger } = require('~/config');
+>>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
 
 const providerConfigMap = {
   [EModelEndpoint.openAI]: initOpenAI,
@@ -23,6 +28,115 @@ const providerConfigMap = {
   [EModelEndpoint.anthropic]: initAnthropic,
   [EModelEndpoint.bedrock]: getBedrockOptions,
   [Providers.OLLAMA]: initCustom,
+<<<<<<< HEAD
+=======
+};
+
+/**
+ *
+ * @param {Promise<Array<MongoFile | null>> | undefined} _attachments
+ * @param {AgentToolResources | undefined} _tool_resources
+ * @returns {Promise<{ attachments: Array<MongoFile | undefined> | undefined, tool_resources: AgentToolResources | undefined }>}
+ */
+const primeResources = async (_attachments, _tool_resources) => {
+  try {
+    if (!_attachments) {
+      return { attachments: undefined, tool_resources: _tool_resources };
+    }
+    /** @type {Array<MongoFile | undefined> | undefined} */
+    const files = await _attachments;
+    const attachments = [];
+    const tool_resources = _tool_resources ?? {};
+
+    for (const file of files) {
+      if (!file) {
+        continue;
+      }
+      if (file.metadata?.fileIdentifier) {
+        const execute_code = tool_resources.execute_code ?? {};
+        if (!execute_code.files) {
+          tool_resources.execute_code = { ...execute_code, files: [] };
+        }
+        tool_resources.execute_code.files.push(file);
+      } else if (file.embedded === true) {
+        const file_search = tool_resources.file_search ?? {};
+        if (!file_search.files) {
+          tool_resources.file_search = { ...file_search, files: [] };
+        }
+        tool_resources.file_search.files.push(file);
+      }
+
+      attachments.push(file);
+    }
+    return { attachments, tool_resources };
+  } catch (error) {
+    logger.error('Error priming resources', error);
+    return { attachments: _attachments, tool_resources: _tool_resources };
+  }
+};
+
+const initializeAgentOptions = async ({
+  req,
+  res,
+  agent,
+  endpointOption,
+  tool_resources,
+  isInitialAgent = false,
+}) => {
+  const { tools, toolContextMap } = await loadAgentTools({
+    req,
+    agent,
+    tool_resources,
+  });
+
+  const provider = agent.provider;
+  let getOptions = providerConfigMap[provider];
+
+  if (!getOptions) {
+    const customEndpointConfig = await getCustomEndpointConfig(provider);
+    if (!customEndpointConfig) {
+      throw new Error(`Provider ${provider} not supported`);
+    }
+    getOptions = initCustom;
+    agent.provider = Providers.OPENAI;
+    agent.endpoint = provider.toLowerCase();
+  }
+
+  const model_parameters = agent.model_parameters ?? { model: agent.model };
+  const _endpointOption = isInitialAgent
+    ? endpointOption
+    : {
+      model_parameters,
+    };
+
+  const options = await getOptions({
+    req,
+    res,
+    optionsOnly: true,
+    overrideEndpoint: provider,
+    overrideModel: agent.model,
+    endpointOption: _endpointOption,
+  });
+
+  agent.model_parameters = Object.assign(model_parameters, options.llmConfig);
+  if (options.configOptions) {
+    agent.model_parameters.configuration = options.configOptions;
+  }
+
+  if (!agent.model_parameters.model) {
+    agent.model_parameters.model = agent.model;
+  }
+
+  return {
+    ...agent,
+    tools,
+    toolContextMap,
+    maxContextTokens:
+      agent.max_context_tokens ??
+      getModelMaxTokens(agent.model_parameters.model, providerEndpointMap[provider]) ??
+      4000,
+  };
+>>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
 };
 
 const initializeClient = async ({ req, res, endpointOption }) => {
@@ -48,11 +162,12 @@ const initializeClient = async ({ req, res, endpointOption }) => {
     throw new Error('No agent promise provided');
   }
 
-  /** @type {Agent | null} */
-  const agent = await endpointOption.agent;
-  if (!agent) {
+  // Initialize primary agent
+  const primaryAgent = await endpointOption.agent;
+  if (!primaryAgent) {
     throw new Error('Agent not found');
   }
+<<<<<<< HEAD
 
   const { tools } = await loadAgentTools({
     req,
@@ -73,13 +188,23 @@ const initializeClient = async ({ req, res, endpointOption }) => {
     agent.provider = Providers.OPENAI;
     agent.endpoint = provider.toLowerCase();
   }
+=======
 
-  // TODO: pass-in override settings that are specific to current run
-  endpointOption.model_parameters.model = agent.model;
-  const options = await getOptions({
+  const { attachments, tool_resources } = await primeResources(
+    endpointOption.attachments,
+    primaryAgent.tool_resources,
+  );
+>>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
+
+  const agentConfigs = new Map();
+
+  // Handle primary agent
+  const primaryConfig = await initializeAgentOptions({
     req,
     res,
+    agent: primaryAgent,
     endpointOption,
+<<<<<<< HEAD
     optionsOnly: true,
     overrideEndpoint: provider,
     overrideModel: agent.model,
@@ -89,29 +214,62 @@ const initializeClient = async ({ req, res, endpointOption }) => {
   if (options.configOptions) {
     modelOptions.configuration = options.configOptions;
   }
-
-  const sender = getResponseSender({
-    ...endpointOption,
-    model: endpointOption.model_parameters.model,
+=======
+    tool_resources,
+    isInitialAgent: true,
   });
+>>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
+
+  const agent_ids = primaryConfig.agent_ids;
+  if (agent_ids?.length) {
+    for (const agentId of agent_ids) {
+      const agent = await getAgent({ id: agentId });
+      if (!agent) {
+        throw new Error(`Agent ${agentId} not found`);
+      }
+      const config = await initializeAgentOptions({
+        req,
+        res,
+        agent,
+        endpointOption,
+      });
+      agentConfigs.set(agentId, config);
+    }
+  }
+
+  const sender =
+    primaryAgent.name ??
+    getResponseSender({
+      ...endpointOption,
+      model: endpointOption.model_parameters.model,
+    });
 
   const client = new AgentClient({
     req,
-    agent,
-    tools,
+    agent: primaryConfig,
     sender,
+<<<<<<< HEAD
+=======
+    attachments,
+>>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
     contentParts,
-    modelOptions,
     eventHandlers,
     collectedUsage,
     artifactPromises,
+    spec: endpointOption.spec,
+    agentConfigs,
     endpoint: EModelEndpoint.agents,
+<<<<<<< HEAD
     attachments: endpointOption.attachments,
     maxContextTokens:
       agent.max_context_tokens ??
       getModelMaxTokens(modelOptions.model, providerEndpointMap[provider]) ??
       4000,
+=======
+    maxContextTokens: primaryConfig.maxContextTokens,
+>>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
   });
+
   return { client };
 };
 

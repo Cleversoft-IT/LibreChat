@@ -40,12 +40,25 @@ async function getCodeOutputDownloadStream(fileIdentifier, apiKey) {
  * @param {import('fs').ReadStream | import('stream').Readable} params.stream - The read stream for the file.
  * @param {string} params.filename - The name of the file.
  * @param {string} params.apiKey - The API key for authentication.
+<<<<<<< HEAD
  * @returns {Promise<string>}
  * @throws {Error} If there's an error during the upload process.
  */
 async function uploadCodeEnvFile({ req, stream, filename, apiKey }) {
   try {
     const form = new FormData();
+=======
+ * @param {string} [params.entity_id] - Optional entity ID for the file.
+ * @returns {Promise<string>}
+ * @throws {Error} If there's an error during the upload process.
+ */
+async function uploadCodeEnvFile({ req, stream, filename, apiKey, entity_id = '' }) {
+  try {
+    const form = new FormData();
+    if (entity_id.length > 0) {
+      form.append('entity_id', entity_id);
+    }
+>>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
     form.append('file', stream, filename);
 
     const baseURL = getCodeBaseURL();
@@ -67,7 +80,16 @@ async function uploadCodeEnvFile({ req, stream, filename, apiKey }) {
       throw new Error(`Error uploading file: ${result.message}`);
     }
 
+<<<<<<< HEAD
     return `${result.session_id}/${result.files[0].fileId}`;
+=======
+    const fileIdentifier = `${result.session_id}/${result.files[0].fileId}`;
+    if (entity_id.length === 0) {
+      return fileIdentifier;
+    }
+
+    return `${fileIdentifier}?entity_id=${entity_id}`;
+>>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
   } catch (error) {
     throw new Error(`Error uploading file: ${error.message}`);
   }

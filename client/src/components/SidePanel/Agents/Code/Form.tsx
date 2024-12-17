@@ -16,6 +16,7 @@ export default function CodeForm({
   const { data } = useVerifyAgentToolAuth({ toolId: Tools.execute_code });
 
   return (
+<<<<<<< HEAD
     <div className="mb-4">
       <div className="mb-1.5 flex items-center">
         <span>
@@ -23,6 +24,20 @@ export default function CodeForm({
             {localize('com_assistants_capabilities')}
           </label>
         </span>
+=======
+    <div className="w-full">
+      <div className="mb-1.5 flex items-center gap-2">
+        <div className="flex flex-row items-center gap-1">
+          <div className="flex items-center gap-1">
+            <span className="text-token-text-primary block font-medium">
+              {localize('com_agents_code_interpreter_title')}
+            </span>
+            <span className="text-xs text-text-secondary">
+              {localize('com_agents_by_librechat')}
+            </span>
+          </div>
+        </div>
+>>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
       </div>
       <div className="flex flex-col items-start gap-2">
         <Action authType={data?.message} isToolAuthenticated={data?.authenticated} />

@@ -12,9 +12,11 @@ const {
   Constants,
   VisionModes,
   openAISchema,
+  ContentTypes,
   EModelEndpoint,
   KnownEndpoints,
   anthropicSchema,
+  isAgentsEndpoint,
   bedrockOutputParser,
   removeNullishValues,
 } = require('librechat-data-provider');
@@ -30,10 +32,10 @@ const {
   createContextHandlers,
 } = require('~/app/clients/prompts');
 const { encodeAndFormat } = require('~/server/services/Files/images/encode');
+const { getBufferString, HumanMessage } = require('@langchain/core/messages');
 const Tokenizer = require('~/server/services/Tokenizer');
 const { spendTokens } = require('~/models/spendTokens');
 const BaseClient = require('~/app/clients/BaseClient');
-// const { sleep } = require('~/server/utils');
 const { createRun } = require('./run');
 const { logger } = require('~/config');
 
@@ -48,6 +50,15 @@ const providerParsers = {
 
 const legacyContentEndpoints = new Set([KnownEndpoints.groq, KnownEndpoints.deepseek]);
 
+<<<<<<< HEAD
+=======
+const noSystemModelRegex = [/\bo1\b/gi];
+
+// const { processMemory, memoryInstructions } = require('~/server/services/Endpoints/agents/memory');
+// const { getFormattedMemories } = require('~/models/Memory');
+// const { getCurrentDateTime } = require('~/utils');
+
+>>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
 class AgentClient extends BaseClient {
   constructor(options = {}) {
     super(null, options);
@@ -62,15 +73,15 @@ class AgentClient extends BaseClient {
     this.run;
 
     const {
+      agentConfigs,
       contentParts,
       collectedUsage,
       artifactPromises,
       maxContextTokens,
-      modelOptions = {},
       ...clientOptions
     } = options;
 
-    this.modelOptions = modelOptions;
+    this.agentConfigs = agentConfigs;
     this.maxContextTokens = maxContextTokens;
     /** @type {MessageContentComplex[]} */
     this.contentParts = contentParts;
@@ -80,6 +91,8 @@ class AgentClient extends BaseClient {
     this.artifactPromises = artifactPromises;
     /** @type {AgentClientOptions} */
     this.options = Object.assign({ endpoint: options.endpoint }, clientOptions);
+    /** @type {string} */
+    this.model = this.options.agent.model_parameters.model;
   }
 
   /**
@@ -169,7 +182,7 @@ class AgentClient extends BaseClient {
         : {};
 
     if (parseOptions) {
-      runOptions = parseOptions(this.modelOptions);
+      runOptions = parseOptions(this.options.agent.model_parameters);
     }
 
     return removeNullishValues(
@@ -224,7 +237,28 @@ class AgentClient extends BaseClient {
     let promptTokens;
 
     /** @type {string} */
-    let systemContent = `${instructions ?? ''}${additional_instructions ?? ''}`;
+    let systemContent = [instructions ?? '', additional_instructions ?? '']
+      .filter(Boolean)
+      .join('\n')
+      .trim();
+    // this.systemMessage = getCurrentDateTime();
+    // const { withKeys, withoutKeys } = await getFormattedMemories({
+    //   userId: this.options.req.user.id,
+    // });
+    // processMemory({
+    //   userId: this.options.req.user.id,
+    //   message: this.options.req.body.text,
+    //   parentMessageId,
+    //   memory: withKeys,
+    //   thread_id: this.conversationId,
+    // }).catch((error) => {
+    //   logger.error('Memory Agent failed to process memory', error);
+    // });
+
+    // this.systemMessage += '\n\n' + memoryInstructions;
+    // if (withoutKeys) {
+    //   this.systemMessage += `\n\n# Existing memory about the user:\n${withoutKeys}`;
+    // }
 
     if (this.options.attachments) {
       const attachments = await this.options.attachments;
@@ -245,7 +279,8 @@ class AgentClient extends BaseClient {
       this.options.attachments = files;
     }
 
-    if (this.message_file_map) {
+    /** Note: Bedrock uses legacy RAG API handling */
+    if (this.message_file_map && !isAgentsEndpoint(this.options.endpoint)) {
       this.contextHandlers = createContextHandlers(
         this.options.req,
         orderedMessages[orderedMessages.length - 1].text,
@@ -319,7 +354,6 @@ class AgentClient extends BaseClient {
 
   /** @type {sendCompletion} */
   async sendCompletion(payload, opts = {}) {
-    this.modelOptions.user = this.user;
     await this.chatCompletion({
       payload,
       onProgress: opts.onProgress,
@@ -339,10 +373,10 @@ class AgentClient extends BaseClient {
       await spendTokens(
         {
           context,
-          model: model ?? this.modelOptions.model,
           conversationId: this.conversationId,
           user: this.user ?? this.options.req.user?.id,
           endpointTokenConfig: this.options.endpointTokenConfig,
+          model: usage.model ?? model ?? this.model ?? this.options.agent.model_parameters.model,
         },
         { promptTokens: usage.input_tokens, completionTokens: usage.output_tokens },
       );
@@ -457,6 +491,7 @@ class AgentClient extends BaseClient {
       //   });
       // }
 
+<<<<<<< HEAD
       const run = await createRun({
         req: this.options.req,
         agent: this.options.agent,
@@ -466,21 +501,28 @@ class AgentClient extends BaseClient {
         customHandlers: this.options.eventHandlers,
       });
 
+=======
+>>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
       const config = {
         configurable: {
           thread_id: this.conversationId,
+          last_agent_index: this.agentConfigs?.size ?? 0,
+          hide_sequential_outputs: this.options.agent.hide_sequential_outputs,
         },
         signal: abortController.signal,
         streamMode: 'values',
         version: 'v2',
       };
 
-      if (!run) {
-        throw new Error('Failed to create run');
+      const initialMessages = formatAgentMessages(payload);
+      if (legacyContentEndpoints.has(this.options.agent.endpoint)) {
+        formatContentStrings(initialMessages);
       }
 
-      this.run = run;
+      /** @type {ReturnType<createRun>} */
+      let run;
 
+<<<<<<< HEAD
       const messages = formatAgentMessages(payload);
       if (legacyContentEndpoints.has(this.options.agent.endpoint)) {
         formatContentStrings(messages);
@@ -493,7 +535,173 @@ class AgentClient extends BaseClient {
             toolId,
           );
         },
+=======
+      /**
+       *
+       * @param {Agent} agent
+       * @param {BaseMessage[]} messages
+       * @param {number} [i]
+       * @param {TMessageContentParts[]} [contentData]
+       */
+      const runAgent = async (agent, messages, i = 0, contentData = []) => {
+        config.configurable.model = agent.model_parameters.model;
+        if (i > 0) {
+          this.model = agent.model_parameters.model;
+        }
+        config.configurable.agent_id = agent.id;
+        config.configurable.name = agent.name;
+        config.configurable.agent_index = i;
+        const noSystemMessages = noSystemModelRegex.some((regex) =>
+          agent.model_parameters.model.match(regex),
+        );
+
+        const systemMessage = Object.values(agent.toolContextMap ?? {})
+          .join('\n')
+          .trim();
+
+        let systemContent = [
+          systemMessage,
+          agent.instructions ?? '',
+          i !== 0 ? agent.additional_instructions ?? '' : '',
+        ]
+          .join('\n')
+          .trim();
+
+        if (noSystemMessages === true) {
+          agent.instructions = undefined;
+          agent.additional_instructions = undefined;
+        } else {
+          agent.instructions = systemContent;
+          agent.additional_instructions = undefined;
+        }
+
+        if (noSystemMessages === true && systemContent?.length) {
+          let latestMessage = messages.pop().content;
+          if (typeof latestMessage !== 'string') {
+            latestMessage = latestMessage[0].text;
+          }
+          latestMessage = [systemContent, latestMessage].join('\n');
+          messages.push(new HumanMessage(latestMessage));
+        }
+
+        run = await createRun({
+          agent,
+          req: this.options.req,
+          runId: this.responseMessageId,
+          signal: abortController.signal,
+          customHandlers: this.options.eventHandlers,
+        });
+
+        if (!run) {
+          throw new Error('Failed to create run');
+        }
+
+        if (i === 0) {
+          this.run = run;
+        }
+
+        if (contentData.length) {
+          run.Graph.contentData = contentData;
+        }
+
+        await run.processStream({ messages }, config, {
+          keepContent: i !== 0,
+          callbacks: {
+            [Callback.TOOL_ERROR]: (graph, error, toolId) => {
+              logger.error(
+                '[api/server/controllers/agents/client.js #chatCompletion] Tool Error',
+                error,
+                toolId,
+              );
+            },
+          },
+        });
+      };
+
+      await runAgent(this.options.agent, initialMessages);
+
+      let finalContentStart = 0;
+      if (this.agentConfigs && this.agentConfigs.size > 0) {
+        let latestMessage = initialMessages.pop().content;
+        if (typeof latestMessage !== 'string') {
+          latestMessage = latestMessage[0].text;
+        }
+        let i = 1;
+        let runMessages = [];
+
+        const lastFiveMessages = initialMessages.slice(-5);
+        for (const [agentId, agent] of this.agentConfigs) {
+          if (abortController.signal.aborted === true) {
+            break;
+          }
+          const currentRun = await run;
+
+          if (
+            i === this.agentConfigs.size &&
+            config.configurable.hide_sequential_outputs === true
+          ) {
+            const content = this.contentParts.filter(
+              (part) => part.type === ContentTypes.TOOL_CALL,
+            );
+
+            this.options.res.write(
+              `event: message\ndata: ${JSON.stringify({
+                event: 'on_content_update',
+                data: {
+                  runId: this.responseMessageId,
+                  content,
+                },
+              })}\n\n`,
+            );
+          }
+          const _runMessages = currentRun.Graph.getRunMessages();
+          finalContentStart = this.contentParts.length;
+          runMessages = runMessages.concat(_runMessages);
+          const contentData = currentRun.Graph.contentData.slice();
+          const bufferString = getBufferString([new HumanMessage(latestMessage), ...runMessages]);
+          if (i === this.agentConfigs.size) {
+            logger.debug(`SEQUENTIAL AGENTS: Last buffer string:\n${bufferString}`);
+          }
+          try {
+            const contextMessages = [];
+            for (const message of lastFiveMessages) {
+              const messageType = message._getType();
+              if (
+                (!agent.tools || agent.tools.length === 0) &&
+                (messageType === 'tool' || (message.tool_calls?.length ?? 0) > 0)
+              ) {
+                continue;
+              }
+
+              contextMessages.push(message);
+            }
+            const currentMessages = [...contextMessages, new HumanMessage(bufferString)];
+            await runAgent(agent, currentMessages, i, contentData);
+          } catch (err) {
+            logger.error(
+              `[api/server/controllers/agents/client.js #chatCompletion] Error running agent ${agentId} (${i})`,
+              err,
+            );
+          }
+          i++;
+        }
+      }
+
+      if (config.configurable.hide_sequential_outputs !== true) {
+        finalContentStart = 0;
+      }
+
+      this.contentParts = this.contentParts.filter((part, index) => {
+        // Include parts that are either:
+        // 1. At or after the finalContentStart index
+        // 2. Of type tool_call
+        // 3. Have tool_call_ids property
+        return (
+          index >= finalContentStart || part.type === ContentTypes.TOOL_CALL || part.tool_call_ids
+        );
+>>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
       });
+
       this.recordCollectedUsage({ context: 'message' }).catch((err) => {
         logger.error(
           '[api/server/controllers/agents/client.js #chatCompletion] Error recording collected usage',
@@ -586,7 +794,7 @@ class AgentClient extends BaseClient {
   }
 
   getEncoding() {
-    return this.modelOptions.model?.includes('gpt-4o') ? 'o200k_base' : 'cl100k_base';
+    return this.model?.includes('gpt-4o') ? 'o200k_base' : 'cl100k_base';
   }
 
   /**
