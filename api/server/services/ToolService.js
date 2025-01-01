@@ -1,10 +1,6 @@
 const fs = require('fs');
 const path = require('path');
 const { zodToJsonSchema } = require('zod-to-json-schema');
-<<<<<<< HEAD
-const { Calculator } = require('@langchain/community/tools/calculator');
-=======
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
 const { tool: toolFn, Tool } = require('@langchain/core/tools');
 const { Calculator } = require('@langchain/community/tools/calculator');
 const {
@@ -498,10 +494,7 @@ async function loadAgentTools({ req, agent, tool_resources, openAIApiKey }) {
 
   return {
     tools: agentTools,
-<<<<<<< HEAD
-=======
     toolContextMap,
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
   };
 }
 

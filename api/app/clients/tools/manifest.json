@@ -138,7 +138,6 @@
         "description": "You need to provideq your API Key for Azure AI Search."
       }
     ]
-<<<<<<< HEAD
   },
   {
     "name": "Drupal Forma Aquae",
@@ -202,7 +201,5 @@
     "description": "Create Feedback Workflow API is a robust search API tailored for LLM Agents. Get an API key here: https://formaaquae.cleversoft.it",
     "icon": "https://uxwing.com/wp-content/themes/uxwing/download/hand-gestures/negative-feedback-icon.png",
     "authConfig": []
-=======
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
   }
 ]

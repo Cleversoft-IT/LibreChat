@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-const { EnvVar } = require('@librechat/agents');
-const { Tools, AuthType } = require('librechat-data-provider');
-const { loadAuthValues } = require('~/app/clients/tools/util');
-=======
 const { nanoid } = require('nanoid');
 const { EnvVar } = require('@librechat/agents');
 const { Tools, AuthType, ToolCallTypes } = require('librechat-data-provider');
@@ -12,7 +7,6 @@ const { loadAuthValues, loadTools } = require('~/app/clients/tools/util');
 const { createToolCall, getToolCallsByConvo } = require('~/models/ToolCall');
 const { getMessage } = require('~/models/Message');
 const { logger } = require('~/config');
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
 
 const fieldsMap = {
   [Tools.execute_code]: [EnvVar.CODE_API_KEY],
@@ -36,10 +30,7 @@ const verifyToolAuth = async (req, res) => {
       result = await loadAuthValues({
         userId: req.user.id,
         authFields,
-<<<<<<< HEAD
-=======
         throwError: false,
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
       });
     } catch (error) {
       res.status(200).json({ authenticated: false, message: AuthType.USER_PROVIDED });
@@ -64,9 +55,6 @@ const verifyToolAuth = async (req, res) => {
   }
 };
 
-<<<<<<< HEAD
-module.exports = {
-=======
 /**
  * @param {ServerRequest} req - The request object, containing information about the HTTP request.
  * @param {ServerResponse} res - The response object, used to send back the desired HTTP response.
@@ -193,6 +181,5 @@ const getToolCalls = async (req, res) => {
 module.exports = {
   callTool,
   getToolCalls,
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
   verifyToolAuth,
 };

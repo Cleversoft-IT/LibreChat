@@ -1325,14 +1325,11 @@ ${convo}
       /** @type {(value: void | PromiseLike<void>) => void} */
       let streamResolve;
 
-<<<<<<< HEAD
-=======
       if (this.isO1Model === true && this.azure && modelOptions.stream) {
         delete modelOptions.stream;
         delete modelOptions.stop;
       }
 
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
       if (modelOptions.stream) {
         streamPromise = new Promise((resolve) => {
           streamResolve = resolve;

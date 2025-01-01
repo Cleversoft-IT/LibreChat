@@ -17,11 +17,7 @@ const { providerEndpointMap } = require('librechat-data-provider');
  * @param {ServerRequest} [options.req] - The server request.
  * @param {string | undefined} [options.runId] - Optional run ID; otherwise, a new run ID will be generated.
  * @param {Agent} options.agent - The agent for this run.
-<<<<<<< HEAD
- * @param {StructuredTool[] | undefined} [options.tools] - The tools to use in the run.
-=======
  * @param {AbortSignal} options.signal - The signal for this run.
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
  * @param {Record<GraphEvents, EventHandler> | undefined} [options.customHandlers] - Custom event handlers.
  * @param {boolean} [options.streaming=true] - Whether to use streaming.
  * @param {boolean} [options.streamUsage=true] - Whether to stream usage information.
@@ -30,11 +26,7 @@ const { providerEndpointMap } = require('librechat-data-provider');
 async function createRun({
   runId,
   agent,
-<<<<<<< HEAD
-  modelOptions,
-=======
   signal,
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
   customHandlers,
   streaming = true,
   streamUsage = true,
@@ -51,11 +43,7 @@ async function createRun({
 
   /** @type {StandardGraphConfig} */
   const graphConfig = {
-<<<<<<< HEAD
-    tools,
-=======
     signal,
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
     llmConfig,
     tools: agent.tools,
     instructions: agent.instructions,

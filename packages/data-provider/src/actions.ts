@@ -230,12 +230,8 @@ class RequestExecutor {
     ) {
       this.authHeaders[custom_auth_header] = api_key;
     } else if (isOAuth) {
-<<<<<<< HEAD
-      if (!this.authToken) {
-=======
       const authToken = this.authToken ?? '';
       if (!authToken) {
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
         const tokenResponse = await axios.post(
           client_url,
           {

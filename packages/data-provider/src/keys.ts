@@ -26,10 +26,7 @@ export enum QueryKeys {
   fileConfig = 'fileConfig',
   tools = 'tools',
   toolAuth = 'toolAuth',
-<<<<<<< HEAD
-=======
   toolCalls = 'toolCalls',
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
   agentTools = 'agentTools',
   actions = 'actions',
   assistantDocs = 'assistantDocs',

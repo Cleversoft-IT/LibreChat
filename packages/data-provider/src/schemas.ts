@@ -369,11 +369,7 @@ export const tPluginSchema = z.object({
   name: z.string(),
   pluginKey: z.string(),
   description: z.string(),
-<<<<<<< HEAD
-  icon: z.string(),
-=======
   icon: z.string().optional(),
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
   authConfig: z.array(tPluginAuthConfigSchema).optional(),
   authenticated: z.boolean().optional(),
   isButton: z.boolean().optional(),

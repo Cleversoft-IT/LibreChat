@@ -18,14 +18,11 @@ const {
   isAssistantsEndpoint,
 } = require('librechat-data-provider');
 const { EnvVar } = require('@librechat/agents');
-<<<<<<< HEAD
-=======
 const {
   convertImage,
   resizeAndConvert,
   resizeImageBuffer,
 } = require('~/server/services/Files/images');
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
 const { addResourceFileId, deleteResourceFileId } = require('~/server/controllers/assistants/v2');
 const { addAgentResourceFile, removeAgentResourceFiles } = require('~/models/Agent');
 const { getOpenAIClient } = require('~/server/controllers/assistants/helpers');
@@ -491,10 +488,7 @@ const processAgentFileUpload = async ({ req, res, metadata }) => {
       stream,
       filename: file.originalname,
       apiKey: result[EnvVar.CODE_API_KEY],
-<<<<<<< HEAD
-=======
       entity_id: messageAttachment === true ? undefined : agent_id,
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
     });
     fileInfoMetadata = { fileIdentifier };
   }
@@ -829,12 +823,8 @@ async function saveBase64Image(
  *
  * @throws {Error} If a file exception is caught (invalid file size or type, lack of metadata).
  */
-<<<<<<< HEAD
-function filterFile({ req, file, image, isAvatar }) {
-=======
 function filterFile({ req, image, isAvatar }) {
   const { file } = req;
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
   const { endpoint, file_id, width, height } = req.body;
 
   if (!file_id && !isAvatar) {

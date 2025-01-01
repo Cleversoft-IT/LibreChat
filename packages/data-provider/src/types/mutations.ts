@@ -263,8 +263,6 @@ export type AcceptTermsMutationOptions = MutationOptions<
 
 /* Tools */
 export type UpdatePluginAuthOptions = MutationOptions<types.TUser, types.TUpdateUserPlugins>;
-<<<<<<< HEAD
-=======
 
 export type ToolParamsMap = {
   [Tools.execute_code]: {
@@ -286,4 +284,3 @@ export type ToolCallMutationOptions<T extends ToolId> = MutationOptions<
   ToolCallResponse,
   ToolParams<T>
 >;
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5

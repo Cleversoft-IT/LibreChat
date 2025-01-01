@@ -141,9 +141,6 @@ const initializeClient = async ({ req, res, endpointOption, optionsOnly, overrid
         },
         clientOptions,
       );
-<<<<<<< HEAD
-      return getLLMConfig(apiKey, requestOptions);
-=======
       const options = getLLMConfig(apiKey, requestOptions);
       if (!customOptions.streamRate) {
         return options;
@@ -156,7 +153,6 @@ const initializeClient = async ({ req, res, endpointOption, optionsOnly, overrid
         },
       ];
       return options;
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
     }
 
     if (clientOptions.reverseProxyUrl) {

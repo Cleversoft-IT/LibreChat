@@ -50,15 +50,12 @@ const providerParsers = {
 
 const legacyContentEndpoints = new Set([KnownEndpoints.groq, KnownEndpoints.deepseek]);
 
-<<<<<<< HEAD
-=======
 const noSystemModelRegex = [/\bo1\b/gi];
 
 // const { processMemory, memoryInstructions } = require('~/server/services/Endpoints/agents/memory');
 // const { getFormattedMemories } = require('~/models/Memory');
 // const { getCurrentDateTime } = require('~/utils');
 
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
 class AgentClient extends BaseClient {
   constructor(options = {}) {
     super(null, options);
@@ -491,18 +488,6 @@ class AgentClient extends BaseClient {
       //   });
       // }
 
-<<<<<<< HEAD
-      const run = await createRun({
-        req: this.options.req,
-        agent: this.options.agent,
-        tools: this.options.tools,
-        runId: this.responseMessageId,
-        modelOptions: this.modelOptions,
-        customHandlers: this.options.eventHandlers,
-      });
-
-=======
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
       const config = {
         configurable: {
           thread_id: this.conversationId,
@@ -522,20 +507,6 @@ class AgentClient extends BaseClient {
       /** @type {ReturnType<createRun>} */
       let run;
 
-<<<<<<< HEAD
-      const messages = formatAgentMessages(payload);
-      if (legacyContentEndpoints.has(this.options.agent.endpoint)) {
-        formatContentStrings(messages);
-      }
-      await run.processStream({ messages }, config, {
-        [Callback.TOOL_ERROR]: (graph, error, toolId) => {
-          logger.error(
-            '[api/server/controllers/agents/client.js #chatCompletion] Tool Error',
-            error,
-            toolId,
-          );
-        },
-=======
       /**
        *
        * @param {Agent} agent
@@ -699,7 +670,6 @@ class AgentClient extends BaseClient {
         return (
           index >= finalContentStart || part.type === ContentTypes.TOOL_CALL || part.tool_call_ids
         );
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
       });
 
       this.recordCollectedUsage({ context: 'message' }).catch((err) => {

@@ -314,8 +314,6 @@ export const getVerifyAgentToolAuth = (
   );
 };
 
-<<<<<<< HEAD
-=======
 export const callTool = <T extends m.ToolId>({
   toolId,
   toolParams,
@@ -340,7 +338,6 @@ export const getToolCalls = (params: q.GetToolCallParams): Promise<q.ToolCallRes
   );
 };
 
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
 /* Files */
 
 export const getFiles = (): Promise<f.TFile[]> => {

@@ -8,7 +8,6 @@ const StructuredSD = require('./structured/StableDiffusion');
 const GoogleSearchAPI = require('./structured/GoogleSearch');
 const TraversaalSearch = require('./structured/TraversaalSearch');
 const TavilySearchResults = require('./structured/TavilySearchResults');
-<<<<<<< HEAD
 const DrupalFAAPI = require('./structured/DrupalFA');
 const VtigerFAAPI = require('./structured/VtigerFA');
 const AiTrainerFA = require('./structured/AiTrainerFA');
@@ -18,8 +17,6 @@ const RetrievalFAAPI = require('./structured/RetrievalFA');
 const VtigerWorkflowFAAPI = require('./structured/VtigerWorkflowFA');
 const GOWorkflowFAAPI = require('./structured/GOWorkflowFA');
 const CreateFeedbackWorkflowAPI = require('./structured/CreateFeedbackWorkflow');
-=======
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
 
 module.exports = {
   availableTools,

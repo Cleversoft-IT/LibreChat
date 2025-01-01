@@ -197,10 +197,7 @@ describe('Tool Handlers', () => {
       expect(mockPluginService.getUserPluginAuthValue).toHaveBeenCalledWith(
         'userId',
         'DALLE3_API_KEY',
-<<<<<<< HEAD
-=======
         true,
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
       );
     });
 

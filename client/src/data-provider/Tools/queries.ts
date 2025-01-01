@@ -1,10 +1,5 @@
-<<<<<<< HEAD
-import { QueryKeys, dataService } from 'librechat-data-provider';
-import { useQuery } from '@tanstack/react-query';
-=======
 import { useQuery } from '@tanstack/react-query';
 import { Constants, QueryKeys, dataService } from 'librechat-data-provider';
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
 import type { QueryObserverResult, UseQueryOptions } from '@tanstack/react-query';
 import type t from 'librechat-data-provider';
 
@@ -23,8 +18,6 @@ export const useVerifyAgentToolAuth = (
     },
   );
 };
-<<<<<<< HEAD
-=======
 
 export const useGetToolCalls = <TData = t.ToolCallResults>(
   params: t.GetToolCallParams,
@@ -46,4 +39,3 @@ export const useGetToolCalls = <TData = t.ToolCallResults>(
     },
   );
 };
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5

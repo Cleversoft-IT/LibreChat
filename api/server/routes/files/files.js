@@ -107,13 +107,10 @@ router.delete('/', async (req, res) => {
   }
 });
 
-<<<<<<< HEAD
-=======
 function isValidID(str) {
   return /^[A-Za-z0-9_-]{21}$/.test(str);
 }
 
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
 router.get('/code/download/:session_id/:fileId', async (req, res) => {
   try {
     const { session_id, fileId } = req.params;
@@ -121,14 +118,11 @@ router.get('/code/download/:session_id/:fileId', async (req, res) => {
     logger.debug(logPrefix);
 
     if (!session_id || !fileId) {
-<<<<<<< HEAD
-=======
       return res.status(400).send('Bad request');
     }
 
     if (!isValidID(session_id) || !isValidID(fileId)) {
       logger.debug(`${logPrefix} invalid session_id or fileId`);
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
       return res.status(400).send('Bad request');
     }
 
@@ -252,11 +246,7 @@ router.post('/', async (req, res) => {
 
     // TODO: delete remote file if it exists
     try {
-<<<<<<< HEAD
-      await fs.unlink(file.path);
-=======
       await fs.unlink(req.file.path);
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
       cleanup = false;
     } catch (error) {
       logger.error('[/files] Error deleting file:', error);

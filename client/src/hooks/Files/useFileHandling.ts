@@ -183,8 +183,6 @@ const useFileHandling = (params?: UseFileHandling) => {
       }
     }
 
-<<<<<<< HEAD
-=======
     if (isAgentsEndpoint(endpoint)) {
       if (!agent_id) {
         formData.append('message_file', 'true');
@@ -197,7 +195,6 @@ const useFileHandling = (params?: UseFileHandling) => {
       }
     }
 
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
     if (!isAssistantsEndpoint(endpoint)) {
       uploadFile.mutate(formData);
       return;

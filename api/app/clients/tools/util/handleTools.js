@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-const { Tools } = require('librechat-data-provider');
-=======
 const { Tools, Constants } = require('librechat-data-provider');
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
 const { SerpAPI } = require('@langchain/community/tools/serpapi');
 const { Calculator } = require('@langchain/community/tools/calculator');
 const { createCodeExecutionTool, EnvVar } = require('@librechat/agents');
@@ -28,14 +24,9 @@ const {
   GOWorkflowFAAPI,
   CreateFeedbackWorkflowAPI,
 } = require('../');
-<<<<<<< HEAD
-const { primeFiles } = require('~/server/services/Files/Code/process');
-const createFileSearchTool = require('./createFileSearchTool');
-=======
 const { primeFiles: primeCodeFiles } = require('~/server/services/Files/Code/process');
 const { createFileSearchTool, primeFiles: primeSearchFiles } = require('./fileSearch');
 const { createMCPTool } = require('~/server/services/MCP');
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
 const { loadSpecs } = require('./loadSpecs');
 const { logger } = require('~/config');
 
@@ -181,13 +172,8 @@ const loadTools = async ({
   user,
   agent,
   model,
-<<<<<<< HEAD
-  functions = true,
-  returnMap = false,
-=======
   endpoint,
   useSpecs,
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
   tools = [],
   options = {},
   functions = true,
@@ -200,7 +186,6 @@ const loadTools = async ({
     'stable-diffusion': StructuredSD,
     'azure-ai-search': StructuredACS,
     traversaal_search: TraversaalSearch,
-<<<<<<< HEAD
     drupal_fa_api: DrupalFAAPI,
     vtiger_fa_api: VtigerFAAPI,
     ai_trainer_fa_api: AiTrainerFA,
@@ -210,8 +195,6 @@ const loadTools = async ({
     retrieval_fa_api: RetrievalFAAPI,
     vtiger_workflow_fa_api: VtigerWorkflowFAAPI,
     create_feedback_workflow_api: CreateFeedbackWorkflowAPI,
-=======
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
     tavily_search_results_json: TavilySearchResults,
   };
 
@@ -266,15 +249,6 @@ const loadTools = async ({
 
   for (const tool of tools) {
     if (tool === Tools.execute_code) {
-<<<<<<< HEAD
-      const authValues = await loadAuthValues({
-        userId: user,
-        authFields: [EnvVar.CODE_API_KEY],
-      });
-      const files = await primeFiles(options, authValues[EnvVar.CODE_API_KEY]);
-      requestedTools[tool] = () =>
-        createCodeExecutionTool({
-=======
       requestedTools[tool] = async () => {
         const authValues = await loadAuthValues({
           userId: user,
@@ -286,7 +260,6 @@ const loadTools = async ({
           toolContextMap[tool] = toolContext;
         }
         const CodeExecutionTool = createCodeExecutionTool({
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
           user_id: user,
           files,
           ...authValues,

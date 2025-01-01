@@ -265,14 +265,6 @@ describe('AWS Bedrock Model Tests', () => {
 
 describe('getCacheMultiplier', () => {
   it('should return the correct cache multiplier for a given valueKey and cacheType', () => {
-<<<<<<< HEAD
-    expect(getCacheMultiplier({ valueKey: 'claude-3-5-sonnet', cacheType: 'write' })).toBe(3.75);
-    expect(getCacheMultiplier({ valueKey: 'claude-3-5-sonnet', cacheType: 'read' })).toBe(0.3);
-    expect(getCacheMultiplier({ valueKey: 'claude-3-5-haiku', cacheType: 'write' })).toBe(1.25);
-    expect(getCacheMultiplier({ valueKey: 'claude-3-5-haiku', cacheType: 'read' })).toBe(0.1);
-    expect(getCacheMultiplier({ valueKey: 'claude-3-haiku', cacheType: 'write' })).toBe(0.3);
-    expect(getCacheMultiplier({ valueKey: 'claude-3-haiku', cacheType: 'read' })).toBe(0.03);
-=======
     expect(getCacheMultiplier({ valueKey: 'claude-3-5-sonnet', cacheType: 'write' })).toBe(
       cacheTokenValues['claude-3-5-sonnet'].write,
     );
@@ -291,7 +283,6 @@ describe('getCacheMultiplier', () => {
     expect(getCacheMultiplier({ valueKey: 'claude-3-haiku', cacheType: 'read' })).toBe(
       cacheTokenValues['claude-3-haiku'].read,
     );
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
   });
 
   it('should return null if cacheType is provided but not found in cacheTokenValues', () => {

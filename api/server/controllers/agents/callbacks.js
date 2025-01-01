@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-const { Tools } = require('librechat-data-provider');
-=======
 const { Tools, StepTypes, imageGenTools, FileContext } = require('librechat-data-provider');
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
 const {
   EnvVar,
   GraphEvents,
@@ -10,10 +6,7 @@ const {
   ChatModelStreamHandler,
 } = require('@librechat/agents');
 const { processCodeOutput } = require('~/server/services/Files/Code/process');
-<<<<<<< HEAD
-=======
 const { saveBase64Image } = require('~/server/services/Files/process');
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
 const { loadAuthValues } = require('~/app/clients/tools/util');
 const { logger } = require('~/config');
 
@@ -293,14 +286,8 @@ function createToolEndCallback({ req, res, artifactPromises }) {
             id,
             name,
             apiKey: result[EnvVar.CODE_API_KEY],
-<<<<<<< HEAD
-            toolCallId: tool_call_id,
-            messageId: metadata.run_id,
-            session_id: artifact.session_id,
-=======
             messageId: metadata.run_id,
             toolCallId: output.tool_call_id,
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
             conversationId: metadata.thread_id,
             session_id: output.artifact.session_id,
           });

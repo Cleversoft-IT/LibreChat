@@ -123,11 +123,7 @@ class PluginsClient extends OpenAIClient {
       useSpecs: true,
     });
 
-<<<<<<< HEAD
-    if (this.tools.length === 0) {
-=======
     if (loadedTools.length === 0) {
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
       return;
     }
 

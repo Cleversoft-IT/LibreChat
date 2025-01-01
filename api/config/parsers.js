@@ -187,9 +187,6 @@ const debugTraverse = winston.format.printf(({ level, message, timestamp, ...met
 });
 
 const jsonTruncateFormat = winston.format((info) => {
-<<<<<<< HEAD
-  const truncateObject = (obj) => {
-=======
   const truncateLongStrings = (str, maxLength) => {
     return str.length > maxLength ? str.substring(0, maxLength) + '...' : str;
   };
@@ -211,22 +208,12 @@ const jsonTruncateFormat = winston.format((info) => {
       return obj.map(item => truncateObject(item));
     }
 
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
     const newObj = {};
     Object.entries(obj).forEach(([key, value]) => {
       if (typeof value === 'string') {
         newObj[key] = truncateLongStrings(value, 255);
-<<<<<<< HEAD
-      } else if (Array.isArray(value)) {
-        newObj[key] = value.map(condenseArray);
-      } else if (typeof value === 'object' && value !== null) {
-        newObj[key] = truncateObject(value);
-      } else {
-        newObj[key] = value;
-=======
       } else {
         newObj[key] = truncateObject(value);
->>>>>>> e391347b9e63d80a2ea382abf2532e30a7190bb5
       }
     });
     return newObj;
