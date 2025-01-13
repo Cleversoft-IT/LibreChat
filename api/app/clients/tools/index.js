@@ -17,6 +17,7 @@ const RetrievalFAAPI = require('./structured/RetrievalFA');
 const VtigerWorkflowFAAPI = require('./structured/VtigerWorkflowFA');
 const GOWorkflowFAAPI = require('./structured/GOWorkflowFA');
 const CreateFeedbackWorkflowAPI = require('./structured/CreateFeedbackWorkflow');
+const OpenWeather = require('./structured/OpenWeather');
 
 module.exports = {
   availableTools,
@@ -38,4 +39,5 @@ module.exports = {
   VtigerWorkflowFAAPI,
   GOWorkflowFAAPI,
   CreateFeedbackWorkflowAPI,
+  OpenWeather,
 };

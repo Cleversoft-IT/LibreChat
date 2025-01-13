@@ -1,12 +1,12 @@
 import { useRecoilValue } from 'recoil';
 import { useCallback, useMemo, memo } from 'react';
 import type { TMessage } from 'librechat-data-provider';
-import type { TMessageProps } from '~/common';
+import type { TMessageProps, TMessageIcon } from '~/common';
 import MessageContent from '~/components/Chat/Messages/Content/MessageContent';
 import PlaceholderRow from '~/components/Chat/Messages/ui/PlaceholderRow';
 import SiblingSwitch from '~/components/Chat/Messages/SiblingSwitch';
 import HoverButtons from '~/components/Chat/Messages/HoverButtons';
-import Icon from '~/components/Chat/Messages/MessageIcon';
+import MessageIcon from '~/components/Chat/Messages/MessageIcon';
 import { Plugin } from '~/components/Messages/Content';
 import SubRow from '~/components/Chat/Messages/SubRow';
 import { MessageContext } from '~/Providers';
@@ -64,6 +64,26 @@ const MessageRender = memo(
     const isLast = useMemo(
       () => hasNoChildren && (msg?.depth === latestMessage?.depth || msg?.depth === -1),
       [hasNoChildren, msg?.depth, latestMessage?.depth],
+    );
+
+    const iconData: TMessageIcon = useMemo(
+      () => ({
+        endpoint: msg?.endpoint ?? conversation?.endpoint,
+        model: msg?.model ?? conversation?.model,
+        iconURL: msg?.iconURL ?? conversation?.iconURL,
+        modelLabel: messageLabel,
+        isCreatedByUser: msg?.isCreatedByUser,
+      }),
+      [
+        messageLabel,
+        conversation?.endpoint,
+        conversation?.iconURL,
+        conversation?.model,
+        msg?.model,
+        msg?.iconURL,
+        msg?.endpoint,
+        msg?.isCreatedByUser,
+      ],
     );
 
     if (!msg) {
@@ -125,7 +145,7 @@ const MessageRender = memo(
           <div>
             <div className="pt-0.5">
               <div className="flex h-6 w-6 items-center justify-center overflow-hidden rounded-full">
-                <Icon message={msg} conversation={conversation} assistant={assistant} />
+                <MessageIcon iconData={iconData} assistant={assistant} />
               </div>
             </div>
           </div>

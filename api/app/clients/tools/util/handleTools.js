@@ -23,6 +23,7 @@ const {
   VtigerWorkflowFAAPI,
   GOWorkflowFAAPI,
   CreateFeedbackWorkflowAPI,
+  OpenWeather,
 } = require('../');
 const { primeFiles: primeCodeFiles } = require('~/server/services/Files/Code/process');
 const { createFileSearchTool, primeFiles: primeSearchFiles } = require('./fileSearch');
@@ -196,6 +197,7 @@ const loadTools = async ({
     vtiger_workflow_fa_api: VtigerWorkflowFAAPI,
     create_feedback_workflow_api: CreateFeedbackWorkflowAPI,
     tavily_search_results_json: TavilySearchResults,
+    open_weather: OpenWeather,
   };
 
   const customConstructors = {
