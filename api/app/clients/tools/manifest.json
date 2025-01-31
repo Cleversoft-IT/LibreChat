@@ -213,5 +213,12 @@
     "description": "Create Feedback Workflow API is a robust search API tailored for LLM Agents. Get an API key here: https://formaaquae.cleversoft.it",
     "icon": "https://uxwing.com/wp-content/themes/uxwing/download/hand-gestures/negative-feedback-icon.png",
     "authConfig": []
+  },
+  {
+    "name": "Reorder Calculator",
+    "pluginKey": "reorder_calculator",
+    "description": "Calculate optimal reorder quantities and dates based on historical sales data",
+    "icon": "https://i.imgur.com/pVMRjK0.png",
+    "authConfig": []
   }
 ]

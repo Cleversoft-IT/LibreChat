@@ -18,6 +18,7 @@ const VtigerWorkflowFAAPI = require('./structured/VtigerWorkflowFA');
 const GOWorkflowFAAPI = require('./structured/GOWorkflowFA');
 const CreateFeedbackWorkflowAPI = require('./structured/CreateFeedbackWorkflow');
 const OpenWeather = require('./structured/OpenWeather');
+const ReorderCalculator = require('./structured/ReorderCalculator');
 
 module.exports = {
   availableTools,
@@ -40,4 +41,5 @@ module.exports = {
   GOWorkflowFAAPI,
   CreateFeedbackWorkflowAPI,
   OpenWeather,
+  ReorderCalculator,
 };

@@ -24,6 +24,7 @@ const {
   GOWorkflowFAAPI,
   CreateFeedbackWorkflowAPI,
   OpenWeather,
+  ReorderCalculator,
 } = require('../');
 const { primeFiles: primeCodeFiles } = require('~/server/services/Files/Code/process');
 const { createFileSearchTool, primeFiles: primeSearchFiles } = require('./fileSearch');
@@ -198,6 +199,7 @@ const loadTools = async ({
     create_feedback_workflow_api: CreateFeedbackWorkflowAPI,
     tavily_search_results_json: TavilySearchResults,
     open_weather: OpenWeather,
+    reorder_calculator: ReorderCalculator,
   };
 
   const customConstructors = {
