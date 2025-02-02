@@ -1,42 +1,59 @@
+// ReorderCalculator.js
+// A tool for calculating reorder quantities and dates using weighted historical data
 const { z } = require('zod');
 const { Tool } = require('@langchain/core/tools');
 const { logger } = require('~/config');
 
-// Utility to get approximate Z-values for different service levels
+// Z-score lookup table for service levels
+const zTable = {
+  0.90: 1.28,
+  0.95: 1.645,
+  0.98: 2.055,
+  0.99: 2.326
+};
+
 function getZValue(serviceLevel) {
-  if (serviceLevel >= 0.999) return 3.09;
-  if (serviceLevel >= 0.99) return 2.33;
-  if (serviceLevel >= 0.975) return 1.96;
-  if (serviceLevel >= 0.95) return 1.645;
-  if (serviceLevel >= 0.90) return 1.28;
-  return 1.0; // fallback
+  return zTable[serviceLevel] || zTable[0.95];
 }
 
-// Parse "YYYY-MM" => { year: number, monthIndex: 0..11 }
+/**
+ * Parse a "YYYY-MM" string into { year, monthIndex } where monthIndex is 0-based
+ */
 function parseYearMonth(ym) {
   const [yearStr, monthStr] = ym.split('-');
   const year = parseInt(yearStr, 10);
-  const monthIndex = parseInt(monthStr, 10) - 1; 
+  const monthIndex = parseInt(monthStr, 10) - 1;
   return { year, monthIndex };
 }
 
-// Add *integer* months to { year, monthIndex }, returning a new object
-function addMonths(yearMonth, numMonths) {
-  const newYear = yearMonth.year + Math.floor((yearMonth.monthIndex + numMonths) / 12);
-  const newMonthIndex = (yearMonth.monthIndex + numMonths) % 12;
-  return {
-    year: newYear,
-    monthIndex: newMonthIndex
-  };
+/**
+ * Convert "YYYY-MM" to "absolute month" (year*12 + monthIndex)
+ * This helps in calculating time differences between months
+ */
+function monthToAbsolute(ym) {
+  const { year, monthIndex } = parseYearMonth(ym);
+  return year * 12 + monthIndex;
 }
 
-// Return just the 0-based month index for the month-of-year (ignore year)
+/**
+ * Add integer months to { year, monthIndex }, returning a new object
+ * Handles month overflow/underflow correctly
+ */
+function addMonths(yearMonth, numMonths) {
+  const newYear = yearMonth.year + Math.floor((yearMonth.monthIndex + numMonths) / 12);
+  const newMonthIndex = ((yearMonth.monthIndex + numMonths) % 12 + 12) % 12;
+  return { year: newYear, monthIndex: newMonthIndex };
+}
+
+/**
+ * Extract just the month index (0-11) from a year-month object
+ */
 function monthIndexOnly(yearMonth) {
   return yearMonth.monthIndex;
 }
 
 class ReorderCalculator extends Tool {
-  constructor(fields) {
+  constructor() {
     super();
     this.name = 'reorder_calculator';
     this.description = `
@@ -49,7 +66,9 @@ class ReorderCalculator extends Tool {
         onHandStock: number (optional, default=0),
         annualGrowth: number (decimal, e.g. 0.10 for +10% yoy),
         safetyStock: number (optional, override),
-        minOperationalStock: number (optional, default=5)
+        minOperationalStock: number (optional, default=5),
+        incomingOrders: [{ month: "YYYY-MM", quantity: number }, ...] (optional),
+        weightingFactor: number (0-1, optional, default=0.85, how much to weight recent data)
       }
     `;
 
@@ -68,13 +87,21 @@ class ReorderCalculator extends Tool {
       annualGrowth: z.number().optional().default(0)
         .describe('Decimal growth rate per year, e.g. 0.10 => +10% yoy, -0.05 => -5%.'),
       safetyStock: z.number().optional(),
-      minOperationalStock: z.number().optional().default(5).describe('Minimum operational stock level')
+      minOperationalStock: z.number().optional().default(5).describe('Minimum operational stock level'),
+      incomingOrders: z.array(
+        z.object({
+          month: z.string().describe('Month in YYYY-MM format'),
+          quantity: z.number().describe('Quantity to be received')
+        })
+      ).optional().default([]).describe('Expected incoming orders'),
+      weightingFactor: z.number().min(0).max(1).optional().default(0.85)
+        .describe('Factor to weight recent data (0-1). 0.85 means each month ago reduces weight by 15%')
     });
   }
 
   async _call(input, _runManager) {
     try {
-      logger.info(`[ReorderCalculator] Calculating with seasonality + growth: ${JSON.stringify(input)}`);
+      logger.info(`[ReorderCalculator] Calculating with weighted historical data (weight=${input.weightingFactor}): ${JSON.stringify(input)}`);
 
       // 1. Parse/validate input
       const {
@@ -84,20 +111,40 @@ class ReorderCalculator extends Tool {
         onHandStock,
         annualGrowth,
         safetyStock,
-        minOperationalStock
+        minOperationalStock,
+        incomingOrders,
+        weightingFactor
       } = this.schema.parse(input);
 
       if (!salesData.length) {
         throw new Error('No sales data provided.');
       }
 
-      // 2. Group historical data by month-of-year
-      //    dataByMonth[m] = array of all demands in month m (0-based for Jan..Dec)
-      const dataByMonth = Array.from({ length: 12 }, () => ({ values: [] }));
+      // 2. Find the most recent month in the dataset to use as reference point
+      let maxAbs = -Infinity;
       for (const record of salesData) {
-        const { month: ym, quantity } = record;
-        const parsed = parseYearMonth(ym);
-        dataByMonth[parsed.monthIndex].values.push(quantity);
+        const abs = monthToAbsolute(record.month);
+        if (abs > maxAbs) {
+          maxAbs = abs;
+        }
+      }
+
+      // 3. Group data by month-of-year (0..11), calculating exponential weights
+      // based on how many months ago the data point is from the most recent
+      const dataByMonth = Array.from({ length: 12 }, () => ({ values: [] }));
+
+      for (const record of salesData) {
+        const abs = monthToAbsolute(record.month);
+        const monthsAgo = maxAbs - abs; // 0 = most recent
+        const mIndex = parseYearMonth(record.month).monthIndex;
+
+        // Apply exponential weighting: weightingFactor^monthsAgo
+        const weight = Math.pow(weightingFactor, monthsAgo);
+
+        dataByMonth[mIndex].values.push({
+          quantity: record.quantity,
+          weight: weight
+        });
       }
 
       // 3. Compute average & std dev for each month-of-year
@@ -107,30 +154,46 @@ class ReorderCalculator extends Tool {
       for (let m = 0; m < 12; m++) {
         const arr = dataByMonth[m].values;
         if (!arr.length) {
-          // no data => set 0
           avgByMonth[m] = 0;
           stdByMonth[m] = 0;
           continue;
         }
+
+        // Apply time-based weighting to the values
         const n = arr.length;
-        const mean = arr.reduce((s, x) => s + x, 0) / n;
+        let weightedSum = 0;
+        let weightSum = 0;
+        let weightedSqSum = 0;
+
+        // Most recent values get higher weights
+        for (let i = 0; i < n; i++) {
+          const weight = Math.pow(weightingFactor, n - 1 - i);
+          weightedSum += arr[i].quantity * weight;
+          weightSum += weight;
+          weightedSqSum += arr[i].quantity * arr[i].quantity * weight;
+        }
+
+        // Weighted mean
+        const mean = weightedSum / weightSum;
         avgByMonth[m] = mean;
+
+        // Weighted variance and std dev
         if (n > 1) {
-          const variance = arr.reduce((a, x) => a + (x - mean) ** 2, 0) / (n - 1);
-          stdByMonth[m] = Math.sqrt(variance);
+          const variance = (weightedSqSum / weightSum) - (mean * mean);
+          stdByMonth[m] = Math.sqrt(Math.max(0, variance)); // ensure non-negative
         } else {
-          stdByMonth[m] = 0; // insufficient data for std dev
+          stdByMonth[m] = 0;
         }
       }
 
-      // 4. Convert leadTime (days) -> months
+      // 5. Convert leadTime from days to months for calculations
       const leadTimeMonths = leadTime / 30.0;
 
-      // 5. Figure out the "current month" (the last data month in the dataset).
+      // 6. Determine the current month (last data point) and forecast start
       let latestYear = -Infinity;
       let latestMIndex = -Infinity;
-      for (const { month: ym } of salesData) {
-        const p = parseYearMonth(ym);
+      for (const { month } of salesData) {
+        const p = parseYearMonth(month);
         if (p.year > latestYear) {
           latestYear = p.year;
           latestMIndex = p.monthIndex;
@@ -139,78 +202,64 @@ class ReorderCalculator extends Tool {
         }
       }
       const currentYM = { year: latestYear, monthIndex: latestMIndex };
-      // We'll forecast from the month after that
       const forecastStartYM = addMonths(currentYM, 1);
 
-      // 6. Calculate monthly growth factor
-      //    E.g. if annualGrowth=0.10 => monthlyGrowthFactor=(1.10^(1/12)-1) ~0.007974
+      // 7. Calculate monthly growth factor if annual growth specified
       const monthlyGrowthFactor = (1 + annualGrowth) ** (1 / 12) - 1;
 
-      // We'll forecast each full month in the lead time plus fraction for the partial month
+      // Split leadTimeMonths into full months + fractional part
       const fullMonths = Math.floor(leadTimeMonths);
       const fractionalPart = leadTimeMonths - fullMonths;
 
       let totalForecast = 0;
       let totalVariance = 0;
 
-      // For each full month i in [0..fullMonths-1], forecast
-      // We'll keep a "monthCounter" from 0 upwards for how many months after forecastStartYM
-      // so that the growth scaling = (1 + monthlyGrowthFactor)^(monthCounter).
+      // 8. Calculate demand for each full month in the lead time
       for (let i = 0; i < fullMonths; i++) {
-        // The "pointer" month
-        const pointerYM = addMonths(forecastStartYM, i); 
+        const pointerYM = addMonths(forecastStartYM, i);
         const mIndex = monthIndexOnly(pointerYM);
 
-        // Base mean & std for that month-of-year
         const baseAvg = avgByMonth[mIndex];
         const baseStd = stdByMonth[mIndex];
 
-        // Growth offset factor
-        const factor = (1 + monthlyGrowthFactor) ** i;  
-        const scaledAvg = baseAvg * factor;
-        const scaledStd = baseStd * factor; // assume std scales with mean
+        // Apply growth factor: (1 + monthlyGrowth)^monthsFromStart
+        const growthFactor = (1 + monthlyGrowthFactor) ** i;
+        const scaledAvg = baseAvg * growthFactor;
+        const scaledStd = baseStd * growthFactor; // Assume std scales with mean
 
         totalForecast += scaledAvg;
         totalVariance += scaledStd ** 2;
       }
 
-      // Now handle the partial month leftover
+      // 9. Handle partial month at end of lead time
       if (fractionalPart > 0) {
         const pointerYM = addMonths(forecastStartYM, fullMonths);
         const mIndex = monthIndexOnly(pointerYM);
         const baseAvg = avgByMonth[mIndex];
         const baseStd = stdByMonth[mIndex];
 
-        // The offset is fullMonths + fraction
-        // But for partial month, we typically scale only by the integer part for the growth exponent
-        // because "i + fractional" months into the future. 
-        // i.e. offset = fullMonths + fractionalPart
-        const offset = fullMonths + fractionalPart;  
-        const factor = (1 + monthlyGrowthFactor) ** offset;
+        const offset = fullMonths + fractionalPart;
+        const growthFactor = (1 + monthlyGrowthFactor) ** offset;
 
-        const scaledAvg = baseAvg * factor;
-        const scaledStd = baseStd * factor;
+        const scaledAvg = baseAvg * growthFactor;
+        const scaledStd = baseStd * growthFactor;
 
-        // Then only a fraction of that month's demand
         totalForecast += fractionalPart * scaledAvg;
-        // For variance, add (fractionalPart^2) * (scaledStd^2)
         totalVariance += (fractionalPart ** 2) * (scaledStd ** 2);
       }
 
-      // So totalForecast is demand over the leadTime (in months) with growth, 
-      // totalStdDev is sqrt of totalVariance
       const totalStdDev = Math.sqrt(totalVariance);
 
-      // 7. Safety Stock
+      // 10. Calculate safety stock
       let finalSafetyStock = 0;
       if (typeof safetyStock === 'number') {
+        // Use override if provided
         finalSafetyStock = safetyStock;
       } else {
         const zVal = getZValue(serviceLevel);
         finalSafetyStock = zVal * totalStdDev;
       }
-
-      // Enforce minimum operational stock
+      // Apply minimum operational stock threshold
       if (finalSafetyStock < minOperationalStock) {
         finalSafetyStock = minOperationalStock;
       }
@@ -218,37 +267,53 @@ class ReorderCalculator extends Tool {
       // 8. Reorder Point
       const reorderPoint = totalForecast + finalSafetyStock;
 
-      // 9. Reorder Quantity
-      let reorderQuantity = 0;
-      if (onHandStock < reorderPoint) {
-        reorderQuantity = Math.ceil(reorderPoint - onHandStock);
+      // 9. Calculate expected incoming stock during lead time
+      let incomingStock = 0;
+      if (incomingOrders && incomingOrders.length > 0) {
+        // Get the date range for lead time
+        const forecastEndYM = addMonths(forecastStartYM, Math.ceil(leadTimeMonths));
+        
+        // Sum quantities from orders that arrive within our lead time window
+        incomingStock = incomingOrders.reduce((sum, order) => {
+          const orderYM = parseYearMonth(order.month);
+          // Check if order arrives between forecast start and end
+          if (
+            (orderYM.year > forecastStartYM.year || 
+             (orderYM.year === forecastStartYM.year && orderYM.monthIndex >= forecastStartYM.monthIndex)) &&
+            (orderYM.year < forecastEndYM.year || 
+             (orderYM.year === forecastEndYM.year && orderYM.monthIndex <= forecastEndYM.monthIndex))
+          ) {
+            return sum + order.quantity;
+          }
+          return sum;
+        }, 0);
       }
 
-      // 10. Simple reorder date heuristic
-      //     If onHandStock < reorderPoint => reorder now => "today"
+      // 10. Adjust effective stock by adding incoming orders
+      const effectiveStock = onHandStock + incomingStock;
+
+      // 11. Reorder Quantity - consider incoming stock
+      let reorderQuantity = 0;
+      if (effectiveStock < reorderPoint) {
+        reorderQuantity = Math.ceil(reorderPoint - effectiveStock);
+      }
+
+      // 12. Simple reorder date heuristic
+      //     If effectiveStock < reorderPoint => reorder now => "today"
       //     Otherwise, guess how many months until we dip below ROP
-      //     (very approximate, ignoring partial months & the fact that monthly usage changes with growth/season.)
       let reorderDate = 'today';
-      if (onHandStock >= reorderPoint) {
-        // For a naive approach, we might just take the next month’s scaled average usage 
-        // as the consumption rate. We'll do offset=0 for the next month:
+      if (effectiveStock >= reorderPoint) {
         const nextMonthYM = addMonths(forecastStartYM, 0);
         const mIndex = monthIndexOnly(nextMonthYM);
 
         const baseAvg = avgByMonth[mIndex];
-        // If we have zero baseAvg, no reorder needed
         if (baseAvg <= 0) {
-          reorderDate = 'No reorder needed (zero demand?).';
+          reorderDate = 'No reorder needed (zero demand?)';
         } else {
-          // scale it for offset=0 => factor=1^0=1, 
-          // but let's assume nextMonth average is actually factor^(0) => 1 if we do the naive approach.
-          // Or we might do factor^(some small offset). This is up to how you want to approximate.
-          const usedAvg = baseAvg; 
-          // The months until ROP = (onHandStock - reorderPoint)/ usedAvg
-          // but reorderPoint might be bigger. If so, we might get negative => meaning reorder now
-          const diff = onHandStock - reorderPoint;
+          const usedAvg = baseAvg;
+          const diff = effectiveStock - reorderPoint;
           if (diff > 0) {
-            const monthsUntilROP = diff / usedAvg; // approximate
+            const monthsUntilROP = diff / usedAvg;
             reorderDate = `in ~${monthsUntilROP.toFixed(1)} months`;
           } else {
             reorderDate = 'today';
@@ -256,16 +321,19 @@ class ReorderCalculator extends Tool {
         }
       }
 
-      // 11. Return results
+      // 13. Return results with incoming orders info
       const confidence = salesData.length > 12 ? 0.9 : 0.7;
       const result = {
         demandDuringLeadTime: totalForecast,
         reorderPoint,
         reorderQuantity,
         safetyStock: finalSafetyStock,
+        currentStock: onHandStock,
+        incomingStock,
+        effectiveStock,
         reorderDate,
         confidence,
-        notes: 'Seasonal + growth approach (basic).'
+        notes: `Seasonal + growth approach with incoming orders and time-based weighting (factor=${weightingFactor}).`
       };
 
       return JSON.stringify(result);
