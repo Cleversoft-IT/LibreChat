@@ -2,6 +2,8 @@ const availableTools = require('./manifest.json');
 
 // Structured Tools
 const DALLE3 = require('./structured/DALLE3');
+const OpenWeather = require('./structured/OpenWeather');
+const createYouTubeTools = require('./structured/YouTube');
 const StructuredWolfram = require('./structured/Wolfram');
 const StructuredACS = require('./structured/AzureAISearch');
 const StructuredSD = require('./structured/StableDiffusion');
@@ -17,20 +19,35 @@ const RetrievalFAAPI = require('./structured/RetrievalFA');
 const VtigerWorkflowFAAPI = require('./structured/VtigerWorkflowFA');
 const GOWorkflowFAAPI = require('./structured/GOWorkflowFA');
 const CreateFeedbackWorkflowAPI = require('./structured/CreateFeedbackWorkflow');
-const OpenWeather = require('./structured/OpenWeather');
 const ReorderCalculator = require('./structured/ReorderCalculator');
 
+/** @type {Record<string, TPlugin | undefined>} */
+const manifestToolMap = {};
+
+/** @type {Array<TPlugin>} */
+const toolkits = [];
+
+availableTools.forEach((tool) => {
+  manifestToolMap[tool.pluginKey] = tool;
+  if (tool.toolkit === true) {
+    toolkits.push(tool);
+  }
+});
+
 module.exports = {
+  toolkits,
   availableTools,
+  manifestToolMap,
   // Structured Tools
   DALLE3,
+  OpenWeather,
   StructuredSD,
   StructuredACS,
   GoogleSearchAPI,
   TraversaalSearch,
   StructuredWolfram,
+  createYouTubeTools,
   TavilySearchResults,
-  TraversaalSearch,
   DrupalFAAPI,
   VtigerFAAPI,
   AiTrainerFA,
@@ -40,6 +57,5 @@ module.exports = {
   VtigerWorkflowFAAPI,
   GOWorkflowFAAPI,
   CreateFeedbackWorkflowAPI,
-  OpenWeather,
   ReorderCalculator,
 };
