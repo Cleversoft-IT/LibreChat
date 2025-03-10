@@ -10,6 +10,11 @@ class GOFAAPI extends DifyFA {
     this.difyApiKey = this.getEnvVariable('DIFY_GO_API_KEY');
 
     this.description_for_model = `
+    // IMPORTANTE: Questo è il primo tool da utilizzare per generare e validare le query SQL!
+    //
+    // Scopo: Questo tool ha l'intelligenza per generare query SQL corrette e validate, identificando
+    // le tabelle e i nomi delle colonne appropriati. È SEMPRE il primo strumento da utilizzare quando
+    // si necessita di dati dal database GO.
     //
     // Funzionalità Principali:
     // - Recupero Articoli: Accesso ai dati relativi ai prodotti aziendali come vasche, lavabi e altre attrezzature.
@@ -24,9 +29,13 @@ class GOFAAPI extends DifyFA {
     //
     // Formato della Risposta:
     // - L'agente deve restituire unicamente la query SQL da eseguire per ottenere i dati richiesti.
+    //
+    // NOTA 1: Solo se questo tool restituisce dati incompleti o parziali, allora, e SOLO allora,
+    // utilizzare il tool "go_workflow_fa_api" con la query esatta fornita da questo tool.
+    // NOTA 2: NON utilizzare MAI il tool "go_workflow_fa_api" senza prima aver utilizzato questo tool.
     `;
     
-    this.description = `Uno strumento per interrogare l'API di GO FA. L'input dovrebbe essere un prompt per l'agente per recuperare la query string. L'output sarà la query SQL da eseguire per ottenere i dati richiesti.`;
+    this.description = this.description_for_model;
   }
 
 }

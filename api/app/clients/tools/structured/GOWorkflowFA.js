@@ -12,9 +12,20 @@ class GOWorkflowFAAPI extends DifyFAWorkflow {
 
     // TODO: CHANGE!!
     this.description_for_model = `
+    // ATTENZIONE: Questo è un tool SECONDARIO da utilizzare SOLO dopo aver utilizzato "go_fa_api"!
+    //
     // Descrizione:
-    // Questo tool è utilizzato per eseguire le query SQL proveniente dall'agente GO. Da usare solo dopo che
-    // il tool "go_fa_api" ha restituito la query in una interazione precedente. Usare solo la query citata.
+    // Questo tool è utilizzato ESCLUSIVAMENTE per eseguire query SQL già validate dal tool "go_fa_api".
+    // A differenza di "go_fa_api", questo tool NON valida l'esistenza delle colonne e può generare errori
+    // se utilizzato con query SQL non validate.
+    //
+    // Regole d'uso:
+    // 1. DEVE essere utilizzato SOLO dopo che il tool "go_fa_api" ha restituito una query SQL in una interazione precedente
+    // 2. DEVE utilizzare ESATTAMENTE la stessa query SQL fornita dal tool "go_fa_api", senza modifiche ai nomi delle colonne
+    // 3. DEVE essere utilizzato SOLO quando "go_fa_api" ha restituito dati incompleti o parziali
+    //
+    // Si consiglia di UTILIZZARE SEMPRE PRIMA il tool "go_fa_api", che ha l'intelligenza per generare 
+    // e validare correttamente le query SQL con i nomi delle colonne e tabelle appropriati.
     `;
     
     this.description = this.description_for_model;

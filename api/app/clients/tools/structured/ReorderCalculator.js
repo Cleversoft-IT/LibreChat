@@ -165,12 +165,12 @@ class ReorderCalculator extends Tool {
         let weightSum = 0;
         let weightedSqSum = 0;
 
-        // Most recent values get higher weights
+        // Use the precomputed weights stored in arr[i].weight
         for (let i = 0; i < n; i++) {
-          const weight = Math.pow(weightingFactor, n - 1 - i);
-          weightedSum += arr[i].quantity * weight;
-          weightSum += weight;
-          weightedSqSum += arr[i].quantity * arr[i].quantity * weight;
+          const w = arr[i].weight;
+          weightedSum += arr[i].quantity * w;
+          weightSum += w;
+          weightedSqSum += arr[i].quantity * arr[i].quantity * w;
         }
 
         // Weighted mean
@@ -322,7 +322,15 @@ class ReorderCalculator extends Tool {
       }
 
       // 13. Return results with incoming orders info
-      const confidence = salesData.length > 12 ? 0.9 : 0.7;
+      // Calculate confidence based on number of data points
+      const minDataPoints = 6;
+      const maxDataPoints = 24;
+      const minConfidence = 0.7;
+      const maxConfidence = 1.0;
+      
+      const normalized = Math.min(Math.max((salesData.length - minDataPoints) / (maxDataPoints - minDataPoints), 0), 1);
+      const confidence = minConfidence + (maxConfidence - minConfidence) * normalized;
+      
       const result = {
         demandDuringLeadTime: totalForecast,
         reorderPoint,
