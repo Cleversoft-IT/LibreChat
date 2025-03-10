@@ -4,7 +4,12 @@
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
 NC='\033[0m' # No Color
+
+# Timestamp for backup branch
+TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+BACKUP_BRANCH="backup_before_sync_${TIMESTAMP}"
 
 # Helper function for prompting yes/no questions
 confirm() {
@@ -36,13 +41,154 @@ handle_error() {
     
     echo -e "\n${RED}Error: $error_msg${NC}"
     
-    if confirm "Do you want to continue with the script?"; then
-        return 0
+    if [ -n "$BACKUP_CREATED" ] && [ "$BACKUP_CREATED" = true ]; then
+        echo -e "\n${YELLOW}A backup branch '${BACKUP_BRANCH}' exists.${NC}"
+        echo -e "Options:"
+        echo -e "1. Restore from backup (recommended)"
+        echo -e "2. Continue with the script anyway"
+        echo -e "3. Exit without restoring"
+        
+        read -p "Choose an option [1-3]: " restore_option
+        case $restore_option in
+            1)
+                restore_from_backup
+                ;;
+            2)
+                echo -e "${YELLOW}Continuing with the script...${NC}"
+                return 0
+                ;;
+            *)
+                echo -e "${YELLOW}Exiting script without restoring...${NC}"
+                echo -e "${BLUE}You can manually restore from the backup branch '${BACKUP_BRANCH}' later with:${NC}"
+                echo -e "git checkout $BACKUP_BRANCH"
+                echo -e "git branch -D $CURRENT_BRANCH"
+                echo -e "git checkout -b $CURRENT_BRANCH"
+                exit $exit_code
+                ;;
+        esac
     else
-        echo -e "${YELLOW}Exiting script...${NC}"
-        exit $exit_code
+        if confirm "Do you want to continue with the script?"; then
+            return 0
+        else
+            echo -e "${YELLOW}Exiting script...${NC}"
+            exit $exit_code
+        fi
     fi
 }
+
+# Function to create a backup branch
+create_backup() {
+    echo -e "\n${BLUE}Creating backup branch '${BACKUP_BRANCH}'...${NC}"
+    if git branch -c "$CURRENT_BRANCH" "$BACKUP_BRANCH"; then
+        echo -e "${GREEN}Backup created successfully.${NC}"
+        BACKUP_CREATED=true
+        return 0
+    else
+        echo -e "${RED}Failed to create backup branch.${NC}"
+        if confirm "Do you want to continue without a backup?"; then
+            return 0
+        else
+            echo -e "${YELLOW}Exiting script...${NC}"
+            exit 10
+        fi
+    fi
+}
+
+# Function to restore from backup
+restore_from_backup() {
+    echo -e "\n${BLUE}Restoring from backup branch '${BACKUP_BRANCH}'...${NC}"
+    
+    # First check if we're on the branch we want to restore to
+    local current=$(git symbolic-ref --short HEAD)
+    if [ "$current" != "$CURRENT_BRANCH" ]; then
+        echo -e "${YELLOW}Currently on branch '$current'. Switching to '$CURRENT_BRANCH'...${NC}"
+        if ! git checkout "$CURRENT_BRANCH"; then
+            echo -e "${RED}Failed to switch to branch '$CURRENT_BRANCH'.${NC}"
+            echo -e "${YELLOW}Manual restoration required. Use these commands:${NC}"
+            echo -e "git checkout $BACKUP_BRANCH"
+            echo -e "git branch -D $CURRENT_BRANCH"
+            echo -e "git checkout -b $CURRENT_BRANCH"
+            exit 11
+        fi
+    fi
+    
+    # Now restore from backup
+    if git reset --hard "$BACKUP_BRANCH"; then
+        echo -e "${GREEN}Successfully restored from backup.${NC}"
+        echo -e "${YELLOW}Note: The backup branch '${BACKUP_BRANCH}' has been preserved.${NC}"
+        echo -e "${YELLOW}You can delete it later with: git branch -D ${BACKUP_BRANCH}${NC}"
+        exit 0
+    else
+        echo -e "${RED}Failed to restore from backup.${NC}"
+        echo -e "${YELLOW}Manual restoration required. Use these commands:${NC}"
+        echo -e "git checkout $BACKUP_BRANCH"
+        echo -e "git branch -D $CURRENT_BRANCH"
+        echo -e "git checkout -b $CURRENT_BRANCH"
+        exit 12
+    fi
+}
+
+# Function to show help
+show_help() {
+    echo -e "${GREEN}Sync Upstream Script Help${NC}"
+    echo -e "This script synchronizes your fork with the upstream repository."
+    echo -e "\nOptions:"
+    echo -e "  --help, -h     Show this help message"
+    echo -e "  --no-backup    Skip creating a backup branch"
+    echo -e "  --restore      Restore from the most recent backup branch"
+    echo -e "  --list-backups List all backup branches"
+    echo -e "\nExample usage:"
+    echo -e "  ./sync_upstream.sh             # Normal sync with backup"
+    echo -e "  ./sync_upstream.sh --no-backup # Sync without creating a backup"
+    echo -e "  ./sync_upstream.sh --restore   # Restore from the most recent backup"
+}
+
+# Function to list backup branches
+list_backups() {
+    echo -e "${BLUE}Available backup branches:${NC}"
+    git branch | grep "backup_before_sync_" | sed 's/^..//'
+    exit 0
+}
+
+# Function to find and restore the most recent backup
+find_and_restore_recent_backup() {
+    local recent_backup=$(git branch | grep "backup_before_sync_" | sed 's/^..//' | sort -r | head -n 1)
+    
+    if [ -z "$recent_backup" ]; then
+        echo -e "${RED}No backup branches found.${NC}"
+        exit 13
+    fi
+    
+    echo -e "${BLUE}Most recent backup branch: ${recent_backup}${NC}"
+    if confirm "Do you want to restore from this backup?"; then
+        BACKUP_BRANCH="$recent_backup"
+        CURRENT_BRANCH=$(git symbolic-ref --short HEAD)
+        restore_from_backup
+    else
+        echo -e "${YELLOW}Restoration cancelled.${NC}"
+        exit 0
+    fi
+}
+
+# Parse command line arguments
+SKIP_BACKUP=false
+for arg in "$@"; do
+    case $arg in
+        --help|-h)
+            show_help
+            exit 0
+            ;;
+        --no-backup)
+            SKIP_BACKUP=true
+            ;;
+        --restore)
+            find_and_restore_recent_backup
+            ;;
+        --list-backups)
+            list_backups
+            ;;
+    esac
+done
 
 echo -e "${GREEN}Starting synchronization with upstream...${NC}"
 
@@ -99,6 +245,11 @@ fi
 CURRENT_BRANCH=$(git symbolic-ref --short HEAD)
 echo -e "\n${GREEN}Current branch: ${CURRENT_BRANCH}${NC}"
 
+# Create backup branch if not skipped
+if [ "$SKIP_BACKUP" = false ]; then
+    create_backup
+fi
+
 # Check for uncommitted changes
 if ! git diff-index --quiet HEAD --; then
     echo -e "\n${YELLOW}Warning: You have uncommitted changes.${NC}"
@@ -148,8 +299,9 @@ if ! git merge upstream/main; then
     echo -e "Options:"
     echo -e "1. Open merge tool to resolve conflicts"
     echo -e "2. Abort merge and exit"
+    echo -e "3. Restore from backup"
     
-    read -p "Choose an option [1-2]: " merge_option
+    read -p "Choose an option [1-3]: " merge_option
     case $merge_option in
         1)
             echo -e "\n${GREEN}Opening merge tool...${NC}"
@@ -161,6 +313,20 @@ if ! git merge upstream/main; then
                 git checkout "$CURRENT_BRANCH"
                 git branch -D sync_from_upstream
                 handle_error "Merge conflicts were not resolved." 5
+            fi
+            ;;
+        3)
+            if [ "$BACKUP_CREATED" = true ]; then
+                git merge --abort
+                git checkout "$CURRENT_BRANCH"
+                git branch -D sync_from_upstream
+                restore_from_backup
+            else
+                echo -e "${RED}No backup was created.${NC}"
+                git merge --abort
+                git checkout "$CURRENT_BRANCH"
+                git branch -D sync_from_upstream
+                handle_error "Merge aborted but no backup exists." 5
             fi
             ;;
         *)
@@ -185,8 +351,9 @@ if ! git merge sync_from_upstream; then
     echo -e "Options:"
     echo -e "1. Open merge tool to resolve conflicts"
     echo -e "2. Abort merge and keep sync branch for manual merge later"
+    echo -e "3. Restore from backup"
     
-    read -p "Choose an option [1-2]: " merge_option
+    read -p "Choose an option [1-3]: " merge_option
     case $merge_option in
         1)
             echo -e "\n${GREEN}Opening merge tool...${NC}"
@@ -197,14 +364,24 @@ if ! git merge sync_from_upstream; then
                 git merge --abort
                 echo -e "${YELLOW}Sync branch 'sync_from_upstream' preserved for manual merging.${NC}"
                 echo -e "${YELLOW}Please resolve conflicts manually and then delete the branch.${NC}"
-                exit 7
+                handle_error "Merge conflicts were not resolved." 7
+            fi
+            ;;
+        3)
+            if [ "$BACKUP_CREATED" = true ]; then
+                git merge --abort
+                restore_from_backup
+            else
+                echo -e "${RED}No backup was created.${NC}"
+                git merge --abort
+                handle_error "Merge aborted but no backup exists." 7
             fi
             ;;
         *)
             git merge --abort
             echo -e "${YELLOW}Sync branch 'sync_from_upstream' preserved for manual merging.${NC}"
             echo -e "${YELLOW}Please resolve conflicts manually and then delete the branch.${NC}"
-            exit 7
+            handle_error "Merge aborted by user." 7
             ;;
     esac
 fi
@@ -225,3 +402,14 @@ fi
 
 echo -e "\n${GREEN}Sync completed successfully!${NC}"
 echo -e "${GREEN}Your fork is now up to date with the upstream repository.${NC}"
+
+if [ "$BACKUP_CREATED" = true ]; then
+    echo -e "\n${BLUE}A backup branch '${BACKUP_BRANCH}' was created.${NC}"
+    if confirm "Would you like to keep the backup branch?"; then
+        echo -e "${GREEN}Backup branch '${BACKUP_BRANCH}' preserved.${NC}"
+        echo -e "${YELLOW}You can delete it later with: git branch -D ${BACKUP_BRANCH}${NC}"
+    else
+        echo -e "${YELLOW}Deleting backup branch...${NC}"
+        git branch -D "$BACKUP_BRANCH" && echo -e "${GREEN}Backup branch deleted.${NC}" || echo -e "${RED}Failed to delete backup branch.${NC}"
+    fi
+fi
