@@ -106,7 +106,10 @@ uploads/
 
 # owner
 release/
+<<<<<<< HEAD
 
 # nginx override for SSL
 client/nginx.conf
+=======
 !/client/src/@types/i18next.d.ts
+>>>>>>> upstream/main
