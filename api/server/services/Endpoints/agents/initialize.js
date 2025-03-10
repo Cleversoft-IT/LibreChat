@@ -2,6 +2,7 @@ const { createContentAggregator, Providers } = require('@librechat/agents');
 const {
   EModelEndpoint,
   getResponseSender,
+  AgentCapabilities,
   providerEndpointMap,
 } = require('librechat-data-provider');
 const {
@@ -13,37 +14,62 @@ const getBedrockOptions = require('~/server/services/Endpoints/bedrock/options')
 const initOpenAI = require('~/server/services/Endpoints/openAI/initialize');
 const initCustom = require('~/server/services/Endpoints/custom/initialize');
 const initGoogle = require('~/server/services/Endpoints/google/initialize');
+const generateArtifactsPrompt = require('~/app/clients/prompts/artifacts');
 const { getCustomEndpointConfig } = require('~/server/services/Config');
+const { processFiles } = require('~/server/services/Files/process');
 const { loadAgentTools } = require('~/server/services/ToolService');
 const AgentClient = require('~/server/controllers/agents/client');
+const { getToolFiles } = require('~/models/Conversation');
 const { getModelMaxTokens } = require('~/utils');
 const { getAgent } = require('~/models/Agent');
+const { getFiles } = require('~/models/File');
 const { logger } = require('~/config');
 
 const providerConfigMap = {
+  [Providers.XAI]: initCustom,
+  [Providers.OLLAMA]: initCustom,
+  [Providers.DEEPSEEK]: initCustom,
+  [Providers.OPENROUTER]: initCustom,
   [EModelEndpoint.openAI]: initOpenAI,
+  [EModelEndpoint.google]: initGoogle,
   [EModelEndpoint.azureOpenAI]: initOpenAI,
   [EModelEndpoint.anthropic]: initAnthropic,
   [EModelEndpoint.bedrock]: getBedrockOptions,
-  [EModelEndpoint.google]: initGoogle,
-  [Providers.OLLAMA]: initCustom,
 };
 
 /**
- *
+ * @param {ServerRequest} req
  * @param {Promise<Array<MongoFile | null>> | undefined} _attachments
  * @param {AgentToolResources | undefined} _tool_resources
  * @returns {Promise<{ attachments: Array<MongoFile | undefined> | undefined, tool_resources: AgentToolResources | undefined }>}
  */
-const primeResources = async (_attachments, _tool_resources) => {
+const primeResources = async (req, _attachments, _tool_resources) => {
   try {
+    /** @type {Array<MongoFile | undefined> | undefined} */
+    let attachments;
+    const tool_resources = _tool_resources ?? {};
+    const isOCREnabled = (req.app.locals?.[EModelEndpoint.agents]?.capabilities ?? []).includes(
+      AgentCapabilities.ocr,
+    );
+    if (tool_resources.ocr?.file_ids && isOCREnabled) {
+      const context = await getFiles(
+        {
+          file_id: { $in: tool_resources.ocr.file_ids },
+        },
+        {},
+        {},
+      );
+      attachments = (attachments ?? []).concat(context);
+    }
     if (!_attachments) {
-      return { attachments: undefined, tool_resources: _tool_resources };
+      return { attachments, tool_resources };
     }
     /** @type {Array<MongoFile | undefined> | undefined} */
     const files = await _attachments;
-    const attachments = [];
-    const tool_resources = _tool_resources ?? {};
+    if (!attachments) {
+      /** @type {Array<MongoFile | undefined>} */
+      attachments = [];
+    }
 
     for (const file of files) {
       if (!file) {
@@ -72,33 +98,63 @@ const primeResources = async (_attachments, _tool_resources) => {
   }
 };
 
+/**
+ * @param {object} params
+ * @param {ServerRequest} params.req
+ * @param {ServerResponse} params.res
+ * @param {Agent} params.agent
+ * @param {object} [params.endpointOption]
+ * @param {boolean} [params.isInitialAgent]
+ * @returns {Promise<Agent>}
+ */
 const initializeAgentOptions = async ({
   req,
   res,
   agent,
   endpointOption,
-  tool_resources,
   isInitialAgent = false,
 }) => {
+  let currentFiles;
+  const requestFiles = req.body.files ?? [];
+  if (
+    isInitialAgent &&
+    req.body.conversationId != null &&
+    agent.model_parameters?.resendFiles === true
+  ) {
+    const fileIds = (await getToolFiles(req.body.conversationId)).map((f) => f.file_id);
+    if (requestFiles.length || fileIds.length) {
+      currentFiles = await processFiles(requestFiles, fileIds);
+    }
+  } else if (isInitialAgent && requestFiles.length) {
+    currentFiles = await processFiles(requestFiles);
+  }
+
+  const { attachments, tool_resources } = await primeResources(
+    req,
+    currentFiles,
+    agent.tool_resources,
+  );
   const { tools, toolContextMap } = await loadAgentTools({
     req,
+    res,
     agent,
     tool_resources,
   });
 
   const provider = agent.provider;
+  agent.endpoint = provider;
   let getOptions = providerConfigMap[provider];
-
-  if (!getOptions) {
+  if (!getOptions && providerConfigMap[provider.toLowerCase()] != null) {
+    agent.provider = provider.toLowerCase();
+    getOptions = providerConfigMap[agent.provider];
+  } else if (!getOptions) {
     const customEndpointConfig = await getCustomEndpointConfig(provider);
     if (!customEndpointConfig) {
       throw new Error(`Provider ${provider} not supported`);
     }
     getOptions = initCustom;
     agent.provider = Providers.OPENAI;
-    agent.endpoint = provider.toLowerCase();
   }
-
   const model_parameters = Object.assign(
     {},
     agent.model_parameters ?? { model: agent.model },
@@ -131,12 +187,20 @@ const initializeAgentOptions = async ({
     agent.model_parameters.model = agent.model;
   }
 
+  if (typeof agent.artifacts === 'string' && agent.artifacts !== '') {
+    agent.additional_instructions = generateArtifactsPrompt({
+      endpoint: agent.provider,
+      artifacts: agent.artifacts,
+    });
+  }
+
   const tokensModel =
     agent.provider === EModelEndpoint.azureOpenAI ? agent.model : agent.model_parameters.model;
 
   return {
     ...agent,
     tools,
+    attachments,
     toolContextMap,
     maxContextTokens:
       agent.max_context_tokens ??
@@ -174,11 +238,6 @@ const initializeClient = async ({ req, res, endpointOption }) => {
     throw new Error('Agent not found');
   }
 
-  const { attachments, tool_resources } = await primeResources(
-    endpointOption.attachments,
-    primaryAgent.tool_resources,
-  );
-
   const agentConfigs = new Map();
 
   // Handle primary agent
@@ -187,7 +246,6 @@ const initializeClient = async ({ req, res, endpointOption }) => {
     res,
     agent: primaryAgent,
     endpointOption,
-    tool_resources,
     isInitialAgent: true,
   });
 
@@ -217,18 +275,19 @@ const initializeClient = async ({ req, res, endpointOption }) => {
 
   const client = new AgentClient({
     req,
-    agent: primaryConfig,
     sender,
-    attachments,
     contentParts,
+    agentConfigs,
     eventHandlers,
     collectedUsage,
     artifactPromises,
+    agent: primaryConfig,
     spec: endpointOption.spec,
     iconURL: endpointOption.iconURL,
-    agentConfigs,
     endpoint: EModelEndpoint.agents,
+    attachments: primaryConfig.attachments,
     maxContextTokens: primaryConfig.maxContextTokens,
+    resendFiles: primaryConfig.model_parameters?.resendFiles ?? true,
   });
 
   return { client };

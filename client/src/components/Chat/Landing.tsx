@@ -1,10 +1,13 @@
 import { useMemo } from 'react';
 import { EModelEndpoint, Constants } from 'librechat-data-provider';
-import { useGetEndpointsQuery, useGetStartupConfig } from 'librechat-data-provider/react-query';
 import type * as t from 'librechat-data-provider';
 import type { ReactNode } from 'react';
 import { useChatContext, useAgentsMapContext, useAssistantsMapContext } from '~/Providers';
-import { useGetAssistantDocsQuery } from '~/data-provider';
+import {
+  useGetAssistantDocsQuery,
+  useGetEndpointsQuery,
+  useGetStartupConfig,
+} from '~/data-provider';
 import ConvoIcon from '~/components/Endpoints/ConvoIcon';
 import { getIconEndpoint, getEntity, cn } from '~/utils';
 import { useLocalize, useSubmitMessage } from '~/hooks';
@@ -84,7 +87,9 @@ export default function Landing({ Header }: { Header?: ReactNode }) {
       return localize('com_nav_welcome_agent');
     }
 
-    return localize('com_nav_welcome_message');
+    return typeof startupConfig?.interface?.customWelcome === 'string'
+      ? startupConfig?.interface?.customWelcome
+      : localize('com_nav_welcome_message');
   };
 
   return (
@@ -115,10 +120,13 @@ export default function Landing({ Header }: { Header?: ReactNode }) {
           <div className="flex flex-col items-center gap-0 p-2">
             <div className="text-center text-2xl font-medium dark:text-white">{name}</div>
             <div className="max-w-md text-center text-sm font-normal text-text-primary ">
-              {description ? description : localize('com_nav_welcome_message')}
+              {description ||
+                (typeof startupConfig?.interface?.customWelcome === 'string'
+                  ? startupConfig?.interface?.customWelcome
+                  : localize('com_nav_welcome_message'))}
             </div>
             {/* <div className="mt-1 flex items-center gap-1 text-token-text-tertiary">
-            <div className="text-sm text-token-text-tertiary">By Daniel Avila</div>
+             <div className="text-sm text-token-text-tertiary">By Daniel Avila</div>
           </div> */}
           </div>
         ) : (

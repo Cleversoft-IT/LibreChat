@@ -32,7 +32,12 @@ const Part = memo(({ part, isSubmitting, attachments, showCursor, isCreatedByUse
   }
 
   if (part.type === ContentTypes.ERROR) {
-    return <ErrorMessage text={part[ContentTypes.TEXT].value} className="my-2" />;
+    return (
+      <ErrorMessage
+        text={part[ContentTypes.ERROR] ?? part[ContentTypes.TEXT]?.value}
+        className="my-2"
+      />
+    );
   } else if (part.type === ContentTypes.TEXT) {
     const text = typeof part.text === 'string' ? part.text : part.text.value;
 
@@ -81,6 +86,8 @@ const Part = memo(({ part, isSubmitting, attachments, showCursor, isCreatedByUse
           initialProgress={toolCall.progress ?? 0.1}
           isSubmitting={isSubmitting}
           attachments={attachments}
+          auth={toolCall.auth}
+          expires_at={toolCall.expires_at}
         />
       );
     } else if (toolCall.type === ToolCallTypes.CODE_INTERPRETER) {

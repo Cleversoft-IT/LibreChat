@@ -155,6 +155,7 @@ export const defaultAgentFormValues = {
   tools: [],
   provider: {},
   projectIds: [],
+  artifacts: '',
   isCollaborative: false,
   [Tools.execute_code]: false,
   [Tools.file_search]: false,
@@ -178,34 +179,34 @@ export const isImageVisionTool = (tool: FunctionTool | FunctionToolCall) =>
 
 export const openAISettings = {
   model: {
-    default: 'gpt-4o',
+    default: 'gpt-4o-mini' as const,
   },
   temperature: {
-    min: 0,
-    max: 2,
-    step: 0.01,
-    default: 1,
+    min: 0 as const,
+    max: 2 as const,
+    step: 0.01 as const,
+    default: 1 as const,
   },
   top_p: {
-    min: 0,
-    max: 1,
-    step: 0.01,
-    default: 1,
+    min: 0 as const,
+    max: 1 as const,
+    step: 0.01 as const,
+    default: 1 as const,
   },
   presence_penalty: {
-    min: 0,
-    max: 2,
-    step: 0.01,
-    default: 0,
+    min: 0 as const,
+    max: 2 as const,
+    step: 0.01 as const,
+    default: 0 as const,
   },
   frequency_penalty: {
-    min: 0,
-    max: 2,
-    step: 0.01,
-    default: 0,
+    min: 0 as const,
+    max: 2 as const,
+    step: 0.01 as const,
+    default: 0 as const,
   },
   resendFiles: {
-    default: true,
+    default: true as const,
   },
   maxContextTokens: {
     default: undefined,
@@ -214,72 +215,85 @@ export const openAISettings = {
     default: undefined,
   },
   imageDetail: {
-    default: ImageDetail.auto,
-    min: 0,
-    max: 2,
-    step: 1,
+    default: ImageDetail.auto as const,
+    min: 0 as const,
+    max: 2 as const,
+    step: 1 as const,
   },
 };
 
 export const googleSettings = {
   model: {
-    default: 'gemini-1.5-flash-latest',
+    default: 'gemini-1.5-flash-latest' as const,
   },
   maxOutputTokens: {
-    min: 1,
-    max: 8192,
-    step: 1,
-    default: 8192,
+    min: 1 as const,
+    max: 8192 as const,
+    step: 1 as const,
+    default: 8192 as const,
   },
   temperature: {
-    min: 0,
-    max: 2,
-    step: 0.01,
-    default: 1,
+    min: 0 as const,
+    max: 2 as const,
+    step: 0.01 as const,
+    default: 1 as const,
   },
   topP: {
-    min: 0,
-    max: 1,
-    step: 0.01,
-    default: 0.95,
+    min: 0 as const,
+    max: 1 as const,
+    step: 0.01 as const,
+    default: 0.95 as const,
   },
   topK: {
-    min: 1,
-    max: 40,
-    step: 1,
-    default: 40,
+    min: 1 as const,
+    max: 40 as const,
+    step: 1 as const,
+    default: 40 as const,
   },
 };
 
-const ANTHROPIC_MAX_OUTPUT = 8192;
-const LEGACY_ANTHROPIC_MAX_OUTPUT = 4096;
+const ANTHROPIC_MAX_OUTPUT = 128000 as const;
+const DEFAULT_MAX_OUTPUT = 8192 as const;
+const LEGACY_ANTHROPIC_MAX_OUTPUT = 4096 as const;
 export const anthropicSettings = {
   model: {
-    default: 'claude-3-5-sonnet-20241022',
+    default: 'claude-3-5-sonnet-latest' as const,
   },
   temperature: {
-    min: 0,
-    max: 1,
-    step: 0.01,
-    default: 1,
+    min: 0 as const,
+    max: 1 as const,
+    step: 0.01 as const,
+    default: 1 as const,
   },
   promptCache: {
-    default: true,
+    default: true as const,
+  },
+  thinking: {
+    default: true as const,
+  },
+  thinkingBudget: {
+    min: 1024 as const,
+    step: 100 as const,
+    max: 200000 as const,
+    default: 2000 as const,
   },
   maxOutputTokens: {
-    min: 1,
+    min: 1 as const,
     max: ANTHROPIC_MAX_OUTPUT,
-    step: 1,
-    default: ANTHROPIC_MAX_OUTPUT,
+    step: 1 as const,
+    default: DEFAULT_MAX_OUTPUT,
     reset: (modelName: string) => {
-      if (modelName.includes('claude-3-5-sonnet')) {
-        return ANTHROPIC_MAX_OUTPUT;
+      if (/claude-3[-.]5-sonnet/.test(modelName) || /claude-3[-.]7/.test(modelName)) {
+        return DEFAULT_MAX_OUTPUT;
       }
 
       return 4096;
     },
     set: (value: number, modelName: string) => {
-      if (!modelName.includes('claude-3-5-sonnet') && value > LEGACY_ANTHROPIC_MAX_OUTPUT) {
+      if (
+        !(/claude-3[-.]5-sonnet/.test(modelName) || /claude-3[-.]7/.test(modelName)) &&
+        value > LEGACY_ANTHROPIC_MAX_OUTPUT
+      ) {
         return LEGACY_ANTHROPIC_MAX_OUTPUT;
       }
 
@@ -287,28 +301,28 @@ export const anthropicSettings = {
     },
   },
   topP: {
-    min: 0,
-    max: 1,
-    step: 0.01,
-    default: 0.7,
+    min: 0 as const,
+    max: 1 as const,
+    step: 0.01 as const,
+    default: 0.7 as const,
   },
   topK: {
-    min: 1,
-    max: 40,
-    step: 1,
-    default: 5,
+    min: 1 as const,
+    max: 40 as const,
+    step: 1 as const,
+    default: 5 as const,
   },
   resendFiles: {
-    default: true,
+    default: true as const,
   },
   maxContextTokens: {
     default: undefined,
   },
   legacy: {
     maxOutputTokens: {
-      min: 1,
+      min: 1 as const,
       max: LEGACY_ANTHROPIC_MAX_OUTPUT,
-      step: 1,
+      step: 1 as const,
       default: LEGACY_ANTHROPIC_MAX_OUTPUT,
     },
   },
@@ -316,34 +330,34 @@ export const anthropicSettings = {
 
 export const agentsSettings = {
   model: {
-    default: 'gpt-3.5-turbo-test',
+    default: 'gpt-3.5-turbo-test' as const,
   },
   temperature: {
-    min: 0,
-    max: 1,
-    step: 0.01,
-    default: 1,
+    min: 0 as const,
+    max: 1 as const,
+    step: 0.01 as const,
+    default: 1 as const,
   },
   top_p: {
-    min: 0,
-    max: 1,
-    step: 0.01,
-    default: 1,
+    min: 0 as const,
+    max: 1 as const,
+    step: 0.01 as const,
+    default: 1 as const,
   },
   presence_penalty: {
-    min: 0,
-    max: 2,
-    step: 0.01,
-    default: 0,
+    min: 0 as const,
+    max: 2 as const,
+    step: 0.01 as const,
+    default: 0 as const,
   },
   frequency_penalty: {
-    min: 0,
-    max: 2,
-    step: 0.01,
-    default: 0,
+    min: 0 as const,
+    max: 2 as const,
+    step: 0.01 as const,
+    default: 0 as const,
   },
   resendFiles: {
-    default: true,
+    default: true as const,
   },
   maxContextTokens: {
     default: undefined,
@@ -352,7 +366,7 @@ export const agentsSettings = {
     default: undefined,
   },
   imageDetail: {
-    default: ImageDetail.auto,
+    default: ImageDetail.auto as const,
   },
 };
 
@@ -555,6 +569,8 @@ export const tConversationSchema = z.object({
   /* Anthropic */
   promptCache: z.boolean().optional(),
   system: z.string().optional(),
+  thinking: z.boolean().optional(),
+  thinkingBudget: coerceNumber.optional(),
   /* artifacts */
   artifacts: z.string().optional(),
   /* google */
@@ -590,6 +606,8 @@ export const tConversationSchema = z.object({
   greeting: z.string().optional(),
   spec: z.string().nullable().optional(),
   iconURL: z.string().nullable().optional(),
+  /* temporary chat */
+  expiredAt: z.string().nullable().optional(),
   /** @deprecated */
   resendImages: z.boolean().optional(),
   /** @deprecated */
@@ -669,6 +687,8 @@ export const tQueryParamsSchema = tConversationSchema
     maxOutputTokens: true,
     /** @endpoints anthropic */
     promptCache: true,
+    thinking: true,
+    thinkingBudget: true,
     /** @endpoints bedrock */
     region: true,
     /** @endpoints bedrock */
@@ -744,37 +764,8 @@ export const googleSchema = tConversationSchema
     spec: true,
     maxContextTokens: true,
   })
-  .transform((obj) => {
-    return {
-      ...obj,
-      model: obj.model ?? google.model.default,
-      modelLabel: obj.modelLabel ?? null,
-      promptPrefix: obj.promptPrefix ?? null,
-      examples: obj.examples ?? [{ input: { content: '' }, output: { content: '' } }],
-      temperature: obj.temperature ?? google.temperature.default,
-      maxOutputTokens: obj.maxOutputTokens ?? google.maxOutputTokens.default,
-      topP: obj.topP ?? google.topP.default,
-      topK: obj.topK ?? google.topK.default,
-      iconURL: obj.iconURL ?? undefined,
-      greeting: obj.greeting ?? undefined,
-      spec: obj.spec ?? undefined,
-      maxContextTokens: obj.maxContextTokens ?? undefined,
-    };
-  })
-  .catch(() => ({
-    model: google.model.default,
-    modelLabel: null,
-    promptPrefix: null,
-    examples: [{ input: { content: '' }, output: { content: '' } }],
-    temperature: google.temperature.default,
-    maxOutputTokens: google.maxOutputTokens.default,
-    topP: google.topP.default,
-    topK: google.topK.default,
-    iconURL: undefined,
-    greeting: undefined,
-    spec: undefined,
-    maxContextTokens: undefined,
-  }));
+  .transform((obj: Partial<TConversation>) => removeNullishValues(obj))
+  .catch(() => ({}));
 
 /**
    * TODO: Map the following fields:
@@ -875,12 +866,18 @@ export const gptPluginsSchema = tConversationSchema
     maxContextTokens: undefined,
   }));
 
-export function removeNullishValues<T extends Record<string, unknown>>(obj: T): Partial<T> {
+export function removeNullishValues<T extends Record<string, unknown>>(
+  obj: T,
+  removeEmptyStrings?: boolean,
+): Partial<T> {
   const newObj: Partial<T> = { ...obj };
 
   (Object.keys(newObj) as Array<keyof T>).forEach((key) => {
     const value = newObj[key];
     if (value === undefined || value === null) {
+      delete newObj[key];
+    }
+    if (removeEmptyStrings && typeof value === 'string' && value === '') {
       delete newObj[key];
     }
   });
@@ -933,8 +930,7 @@ export const compactAssistantSchema = tConversationSchema
     greeting: true,
     spec: true,
   })
-  // will change after adding temperature
-  .transform(removeNullishValues)
+  .transform((obj) => removeNullishValues(obj))
   .catch(() => ({}));
 
 export const agentsSchema = tConversationSchema
@@ -1059,6 +1055,8 @@ export const anthropicSchema = tConversationSchema
     topK: true,
     resendFiles: true,
     promptCache: true,
+    thinking: true,
+    thinkingBudget: true,
     artifacts: true,
     iconURL: true,
     greeting: true,
@@ -1136,7 +1134,7 @@ export const compactPluginsSchema = tConversationSchema
   })
   .catch(() => ({}));
 
-const tBannerSchema = z.object({
+export const tBannerSchema = z.object({
   bannerId: z.string(),
   message: z.string(),
   displayFrom: z.string(),
@@ -1154,9 +1152,8 @@ export const compactAgentsSchema = tConversationSchema
     iconURL: true,
     greeting: true,
     agent_id: true,
-    resendFiles: true,
     instructions: true,
     additional_instructions: true,
   })
-  .transform(removeNullishValues)
+  .transform((obj) => removeNullishValues(obj))
   .catch(() => ({}));

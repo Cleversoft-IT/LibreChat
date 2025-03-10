@@ -10,7 +10,7 @@ import {
   AgentCapabilities,
 } from 'librechat-data-provider';
 import type { TPlugin } from 'librechat-data-provider';
-import type { AgentForm, AgentPanelProps } from '~/common';
+import type { AgentForm, AgentPanelProps, IconComponentTypes } from '~/common';
 import { cn, defaultTextProps, removeFocusOutlines, getEndpointField, getIconKey } from '~/utils';
 import { useCreateAgentMutation, useUpdateAgentMutation } from '~/data-provider';
 import { useLocalize, useAuthContext, useHasAccess } from '~/hooks';
@@ -23,9 +23,11 @@ import { processAgentOption } from '~/utils';
 import AdminSettings from './AdminSettings';
 import DeleteButton from './DeleteButton';
 import AgentAvatar from './AgentAvatar';
+import FileContext from './FileContext';
 import { Spinner } from '~/components';
 import FileSearch from './FileSearch';
 import ShareAgent from './ShareAgent';
+import Artifacts from './Artifacts';
 import AgentTool from './AgentTool';
 import CodeForm from './Code/Form';
 import { Panel } from '~/common';
@@ -77,6 +79,14 @@ export default function AgentConfig({
     () => agentsConfig?.capabilities.includes(AgentCapabilities.actions),
     [agentsConfig],
   );
+  const artifactsEnabled = useMemo(
+    () => agentsConfig?.capabilities.includes(AgentCapabilities.artifacts) ?? false,
+    [agentsConfig],
+  );
+  const ocrEnabled = useMemo(
+    () => agentsConfig?.capabilities.includes(AgentCapabilities.ocr) ?? false,
+    [agentsConfig],
+  );
   const fileSearchEnabled = useMemo(
     () => agentsConfig?.capabilities.includes(AgentCapabilities.file_search) ?? false,
     [agentsConfig],
@@ -85,6 +95,26 @@ export default function AgentConfig({
     () => agentsConfig?.capabilities.includes(AgentCapabilities.execute_code) ?? false,
     [agentsConfig],
   );
+
+  const context_files = useMemo(() => {
+    if (typeof agent === 'string') {
+      return [];
+    }
+
+    if (agent?.id !== agent_id) {
+      return [];
+    }
+
+    if (agent.context_files) {
+      return agent.context_files;
+    }
+
+    const _agent = processAgentOption({
+      agent,
+      fileMap,
+    });
+    return _agent.context_files ?? [];
+  }, [agent, agent_id, fileMap]);
 
   const knowledge_files = useMemo(() => {
     if (typeof agent === 'string') {
@@ -150,7 +180,7 @@ export default function AgentConfig({
     onSuccess: (data) => {
       setCurrentAgentId(data.id);
       showToast({
-        message: `${localize('com_assistants_create_success ')} ${
+        message: `${localize('com_assistants_create_success')} ${
           data.name ?? localize('com_ui_agent')
         }`,
       });
@@ -178,18 +208,10 @@ export default function AgentConfig({
   }, [agent_id, setActivePanel, showToast, localize]);
 
   const providerValue = typeof provider === 'string' ? provider : provider?.value;
+  let Icon: IconComponentTypes | null | undefined;
   let endpointType: EModelEndpoint | undefined;
   let endpointIconURL: string | undefined;
   let iconKey: string | undefined;
-  let Icon:
-    | React.ComponentType<
-        React.SVGProps<SVGSVGElement> & {
-          endpoint: string;
-          endpointType: EModelEndpoint | undefined;
-          iconURL: string | undefined;
-        }
-      >
-    | undefined;
 
   if (providerValue !== undefined) {
     endpointType = getEndpointField(endpointsConfig, providerValue as string, 'type');
@@ -337,7 +359,7 @@ export default function AgentConfig({
             </div>
           </button>
         </div>
-        {(codeEnabled || fileSearchEnabled) && (
+        {(codeEnabled || fileSearchEnabled || artifactsEnabled || ocrEnabled) && (
           <div className="mb-4 flex w-full flex-col items-start gap-3">
             <label className="text-token-text-primary block font-medium">
               {localize('com_assistants_capabilities')}
@@ -346,6 +368,10 @@ export default function AgentConfig({
             {codeEnabled && <CodeForm agent_id={agent_id} files={code_files} />}
             {/* File Search */}
             {fileSearchEnabled && <FileSearch agent_id={agent_id} files={knowledge_files} />}
+            {/* Artifacts */}
+            {artifactsEnabled && <Artifacts />}
+            {/* File Context (OCR) */}
+            {ocrEnabled && <FileContext agent_id={agent_id} files={context_files} />}
           </div>
         )}
         {/* Agent Tools & Actions */}
