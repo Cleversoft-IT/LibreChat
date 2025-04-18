@@ -34,8 +34,9 @@ class GOFAAPI extends DifyFA {
     // utilizzare il tool "go_workflow_fa_api" con la query esatta fornita da questo tool.
     // NOTA 2: NON utilizzare MAI il tool "go_workflow_fa_api" senza prima aver utilizzato questo tool.
     `;
-    
-    this.description = this.description_for_model;
+    // Non è possibile superare i 1024 caratteri per la descrizione del tool.
+    // summarize the description_for_model to 1024 characters
+    this.description = 'Use this tool to generate and validate SQL queries to access GO data. Use this tool when you need to access GO data to retrieve information about products, orders, customers, suppliers, and other data.';
   }
 
 }

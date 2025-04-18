@@ -180,7 +180,13 @@ class ReorderCalculator extends Tool {
         // Weighted variance and std dev
         if (n > 1) {
           const variance = (weightedSqSum / weightSum) - (mean * mean);
+          // Apply a square root transformation to reduce the effect of outliers
           stdByMonth[m] = Math.sqrt(Math.max(0, variance)); // ensure non-negative
+          
+          // Cap standard deviation at 50% of the mean to prevent excessive safety stock
+          if (stdByMonth[m] > mean * 0.5 && mean > 0) {
+            stdByMonth[m] = mean * 0.5;
+          }
         } else {
           stdByMonth[m] = 0;
         }
@@ -225,7 +231,9 @@ class ReorderCalculator extends Tool {
         // Apply growth factor: (1 + monthlyGrowth)^monthsFromStart
         const growthFactor = (1 + monthlyGrowthFactor) ** i;
         const scaledAvg = baseAvg * growthFactor;
-        const scaledStd = baseStd * growthFactor; // Assume std scales with mean
+        // Scale standard deviation more conservatively than mean to prevent excessive safety stock
+        // Square root scaling reduces the impact of growth on variance
+        const scaledStd = baseStd * Math.sqrt(growthFactor);
 
         totalForecast += scaledAvg;
         totalVariance += scaledStd ** 2;
@@ -242,7 +250,8 @@ class ReorderCalculator extends Tool {
         const growthFactor = (1 + monthlyGrowthFactor) ** offset;
 
         const scaledAvg = baseAvg * growthFactor;
-        const scaledStd = baseStd * growthFactor;
+        // Apply the same square root scaling for partial months
+        const scaledStd = baseStd * Math.sqrt(growthFactor);
 
         totalForecast += fractionalPart * scaledAvg;
         totalVariance += (fractionalPart ** 2) * (scaledStd ** 2);
@@ -257,7 +266,21 @@ class ReorderCalculator extends Tool {
         finalSafetyStock = safetyStock;
       } else {
         const zVal = getZValue(serviceLevel);
-        finalSafetyStock = zVal * totalStdDev;
+        
+        // Apply a dampening factor to prevent excessive safety stock
+        // This reduces the impact of high standard deviations
+        const dampingFactor = Math.min(1, 1 / (1 + totalStdDev / (totalForecast || 1) * 2));
+        
+        // Calculate safety stock with the damping factor
+        finalSafetyStock = zVal * totalStdDev * dampingFactor;
+        
+        // Add an upper limit as a percentage of total forecast
+        const maxSafetyStockFactor = 0.5; // 50% of forecast
+        const maxSafetyStock = totalForecast * maxSafetyStockFactor;
+        
+        if (finalSafetyStock > maxSafetyStock && totalForecast > 0) {
+          finalSafetyStock = maxSafetyStock;
+        }
       }
       // Apply minimum operational stock threshold
       if (finalSafetyStock < minOperationalStock) {

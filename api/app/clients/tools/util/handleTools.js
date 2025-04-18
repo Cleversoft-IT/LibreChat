@@ -23,11 +23,12 @@ const {
   AiTrainerFA,
   GOFAAPI,
   MarketingFAAPI,
-  RetrievalFAAPI,
+  ManagedFilesFAAPI,
   VtigerWorkflowFAAPI,
   GOWorkflowFAAPI,
   CreateFeedbackWorkflowAPI,
   ReorderCalculator,
+  ProcedureFAAPI,
 } = require('../');
 const { primeFiles: primeCodeFiles } = require('~/server/services/Files/Code/process');
 const { createFileSearchTool, primeFiles: primeSearchFiles } = require('./fileSearch');
@@ -155,6 +156,7 @@ const loadTools = async ({
   returnMap = false,
 }) => {
   const toolConstructors = {
+    dalle: DALLE3,
     flux: FluxAPI,
     calculator: Calculator,
     google: GoogleSearchAPI,
@@ -169,11 +171,12 @@ const loadTools = async ({
     go_fa_api: GOFAAPI,
     go_workflow_fa_api: GOWorkflowFAAPI,
     marketing_fa_api: MarketingFAAPI,
-    retrieval_fa_api: RetrievalFAAPI,
+    managed_files_fa_api: ManagedFilesFAAPI,
     vtiger_workflow_fa_api: VtigerWorkflowFAAPI,
     create_feedback_workflow_api: CreateFeedbackWorkflowAPI,
     tavily_search_results_json: TavilySearchResults,
     reorder_calculator: ReorderCalculator,
+    procedure_fa_api: ProcedureFAAPI,
   };
 
   const customConstructors = {

@@ -16,11 +16,12 @@ const VtigerFAAPI = require('./structured/VtigerFA');
 const AiTrainerFA = require('./structured/AiTrainerFA');
 const GOFAAPI = require('./structured/GOFA');
 const MarketingFAAPI = require('./structured/MarketingFA');
-const RetrievalFAAPI = require('./structured/RetrievalFA');
+const ManagedFilesFAAPI = require('./structured/ManagedFilesFA');
 const VtigerWorkflowFAAPI = require('./structured/VtigerWorkflowFA');
 const GOWorkflowFAAPI = require('./structured/GOWorkflowFA');
 const CreateFeedbackWorkflowAPI = require('./structured/CreateFeedbackWorkflow');
 const ReorderCalculator = require('./structured/ReorderCalculator');
+const ProcedureFAAPI = require('./structured/ProcedureFA');
 
 /** @type {Record<string, TPlugin | undefined>} */
 const manifestToolMap = {};
@@ -55,9 +56,10 @@ module.exports = {
   AiTrainerFA,
   GOFAAPI,
   MarketingFAAPI,
-  RetrievalFAAPI,
+  ManagedFilesFAAPI,
   VtigerWorkflowFAAPI,
   GOWorkflowFAAPI,
   CreateFeedbackWorkflowAPI,
   ReorderCalculator,
+  ProcedureFAAPI,
 };
