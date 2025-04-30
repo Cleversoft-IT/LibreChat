@@ -22,6 +22,7 @@ const GOWorkflowFAAPI = require('./structured/GOWorkflowFA');
 const CreateFeedbackWorkflowAPI = require('./structured/CreateFeedbackWorkflow');
 const ReorderCalculator = require('./structured/ReorderCalculator');
 const ProcedureFAAPI = require('./structured/ProcedureFA');
+const GOTablesFAAPI = require('./structured/GOTablesFA');
 
 /** @type {Record<string, TPlugin | undefined>} */
 const manifestToolMap = {};
@@ -62,4 +63,5 @@ module.exports = {
   CreateFeedbackWorkflowAPI,
   ReorderCalculator,
   ProcedureFAAPI,
+  GOTablesFAAPI,
 };

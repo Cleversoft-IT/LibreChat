@@ -255,5 +255,12 @@
     "description": "Calculate optimal reorder quantities and dates based on historical sales data",
     "icon": "https://i.imgur.com/pVMRjK0.png",
     "authConfig": []
+  },
+  {
+    "name": "GO Tables Retrieval",
+    "pluginKey": "go_tables_fa_api",
+    "description": "GO Tables Retrieval is a robust search API tailored for LLM Agents. Get an API key here: https://formaaquae.cleversoft.it",
+    "icon": "https://sp-ao.shortpixel.ai/client/to_auto,q_glossy,ret_img,h_190/https://www.gestionaleopen.org/wp-content/uploads/2022/12/logo-sito-web-1.png",
+    "authConfig": []
   }
 ]

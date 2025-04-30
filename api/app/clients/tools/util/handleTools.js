@@ -29,6 +29,7 @@ const {
   CreateFeedbackWorkflowAPI,
   ReorderCalculator,
   ProcedureFAAPI,
+  GOTablesFAAPI,
 } = require('../');
 const { primeFiles: primeCodeFiles } = require('~/server/services/Files/Code/process');
 const { createFileSearchTool, primeFiles: primeSearchFiles } = require('./fileSearch');
@@ -177,6 +178,7 @@ const loadTools = async ({
     tavily_search_results_json: TavilySearchResults,
     reorder_calculator: ReorderCalculator,
     procedure_fa_api: ProcedureFAAPI,
+    go_tables_fa_api: GOTablesFAAPI,
   };
 
   const customConstructors = {
