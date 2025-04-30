@@ -10,6 +10,7 @@ const StructuredACS = require('./structured/AzureAISearch');
 const StructuredSD = require('./structured/StableDiffusion');
 const GoogleSearchAPI = require('./structured/GoogleSearch');
 const TraversaalSearch = require('./structured/TraversaalSearch');
+const createOpenAIImageTools = require('./structured/OpenAIImageTools');
 const TavilySearchResults = require('./structured/TavilySearchResults');
 const DrupalFAAPI = require('./structured/DrupalFA');
 const VtigerFAAPI = require('./structured/VtigerFA');
@@ -64,4 +65,5 @@ module.exports = {
   ReorderCalculator,
   ProcedureFAAPI,
   GOTablesFAAPI,
+  createOpenAIImageTools,
 };
