@@ -30,6 +30,7 @@ const {
   ReorderCalculator,
   ProcedureFAAPI,
   GOTablesFAAPI,
+  CreateProcedureFA,
   createOpenAIImageTools,
 } = require('../');
 const { primeFiles: primeCodeFiles } = require('~/server/services/Files/Code/process');
@@ -180,6 +181,7 @@ const loadTools = async ({
     reorder_calculator: ReorderCalculator,
     procedure_fa_api: ProcedureFAAPI,
     go_tables_fa_api: GOTablesFAAPI,
+    create_procedure_fa: CreateProcedureFA,
   };
 
   const customConstructors = {

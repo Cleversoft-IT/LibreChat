@@ -24,7 +24,7 @@ const CreateFeedbackWorkflowAPI = require('./structured/CreateFeedbackWorkflow')
 const ReorderCalculator = require('./structured/ReorderCalculator');
 const ProcedureFAAPI = require('./structured/ProcedureFA');
 const GOTablesFAAPI = require('./structured/GOTablesFA');
-
+const CreateProcedureFA = require('./structured/CreateProcedureFA');
 /** @type {Record<string, TPlugin | undefined>} */
 const manifestToolMap = {};
 
@@ -66,4 +66,5 @@ module.exports = {
   ProcedureFAAPI,
   GOTablesFAAPI,
   createOpenAIImageTools,
+  CreateProcedureFA,
 };
