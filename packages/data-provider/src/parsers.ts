@@ -225,12 +225,14 @@ const extractOmniVersion = (modelStr: string): string => {
 export const getResponseSender = (endpointOption: t.TEndpointOption): string => {
   const {
     model: _m,
-    endpoint,
+    endpoint: _e,
     endpointType,
     modelDisplayLabel: _mdl,
     chatGptLabel: _cgl,
     modelLabel: _ml,
   } = endpointOption;
+
+  const endpoint = _e as EModelEndpoint;
 
   const model = _m ?? '';
   const modelDisplayLabel = _mdl ?? '';
@@ -275,6 +277,8 @@ export const getResponseSender = (endpointOption: t.TEndpointOption): string => 
       return modelLabel;
     } else if (model && (model.includes('gemini') || model.includes('learnlm'))) {
       return 'Gemini';
+    } else if (model?.toLowerCase().includes('gemma') === true) {
+      return 'Gemma';
     } else if (model && model.includes('code')) {
       return 'Codey';
     }
