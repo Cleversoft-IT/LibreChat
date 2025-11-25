@@ -1,0 +1,60 @@
+openapi: 3.0.0
+info:
+  title: API per gestione tabelle e query SELECT
+  description: API per restituire dettagli delle tabelle e eseguire query SELECT.
+  version: 1.0.0
+servers:
+  - url: https://middlewarego.formaaquae.cleversoft.it  # Sostituisci con il tuo URL
+    description: Server di produzione
+
+paths:
+  /executeSelect:
+    post:
+      summary: Esegue una query di tipo SELECT
+      operationId: postExecuteSelect
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query:
+                  type: string
+                  description: Query di tipo SELECT da eseguire
+                  example: "SELECT * FROM users"
+      responses:
+        '200':
+          description: Risultato della query restituito con successo
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+        '400':
+          description: Query non valida o non di tipo SELECT
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Solo query SELECT sono permesse."
+        '500':
+          description: Errore durante l'esecuzione della query
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Errore durante l'esecuzione della query."
+                  dbError:
+                    type: string
+                    example: "Database error message"

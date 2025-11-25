@@ -179,5 +179,96 @@
         "description": "Provide your Flux API key from your user profile."
       }
     ]
+  },
+  {
+    "name": "Drupal Forma Aquae",
+    "pluginKey": "drupal_fa_api",
+    "description": "Drupal Forma Aquae is a robust search API tailored for LLM Agents. Get an API key here: https://formaaquae.cleversoft.it",
+    "icon": "https://w7.pngwing.com/pngs/917/594/png-transparent-drupal-original-wordmark-logo-icon-thumbnail.png",
+    "authConfig": []
+  },
+  {
+    "name": "Dify Vtiger Forma Aquae",
+    "pluginKey": "vtiger_fa_api",
+    "description": "Dify Vtiger Forma Aquae is a robust search API tailored for LLM Agents. Get an API key here: https://formaaquae.cleversoft.it",
+    "icon": "https://icon2.cleanpng.com/20181125/cf/kisspng-vtiger-crm-logo-business-brand-customer-relationsh-customer-relationship-management-system-web-devz-5bfb3ea47bf809.4195674915431922285078.jpg",
+    "authConfig": []
+  },
+  {
+    "name": "Dify Ai Trainer Forma Aquae",
+    "pluginKey": "ai_trainer_fa_api",
+    "description": "Dify Ai Trainer Forma Aquae is a robust search API tailored for LLM Agents. Get an API key here: https://formaaquae.cleversoft.it",
+    "icon": "https://cdn-icons-png.flaticon.com/512/7922/7922268.png",
+    "authConfig": []
+  },
+  {
+    "name": "Dify GO Forma Aquae",
+    "pluginKey": "go_fa_api",
+    "description": "Dify GO Forma Aquae is a robust search API tailored for LLM Agents. Get an API key here: https://formaaquae.cleversoft.it",
+    "icon": "https://sp-ao.shortpixel.ai/client/to_auto,q_glossy,ret_img,h_190/https://www.gestionaleopen.org/wp-content/uploads/2022/12/logo-sito-web-1.png",
+    "authConfig": []
+  },
+  {
+    "name": "Dify Marketing expert Forma Aquae",
+    "pluginKey": "marketing_fa_api",
+    "description": "Dify Marketing expert Forma Aquae is a robust search API tailored for LLM Agents. Get an API key here: https://formaaquae.cleversoft.it",
+    "icon": "https://cdn-icons-png.freepik.com/256/5863/5863356.png",
+    "authConfig": []
+  },
+  {
+    "name": "Managed Files Retrieval",
+    "pluginKey": "managed_files_fa_api",
+    "description": "Managed Files Retrieval is a robust search API tailored for LLM Agents to search through company files. Get an API key here: https://formaaquae.cleversoft.it",
+    "icon": "https://s3-us-west-2.amazonaws.com/cbi-image-service-prd/original/6926658c-a3d8-44ea-b600-9af7709790da.jpeg",
+    "authConfig": []
+  },
+  {
+    "name": "Procedure Retrieval",
+    "pluginKey": "procedure_fa_api",
+    "description": "Procedure Retrieval is a specialized search API for accessing company procedures and internal knowledge. Get an API key here: https://formaaquae.cleversoft.it",
+    "icon": "https://s3-us-west-2.amazonaws.com/cbi-image-service-prd/original/6926658c-a3d8-44ea-b600-9af7709790da.jpeg",
+    "authConfig": []
+  },
+  {
+    "name": "Vtiger workflow",
+    "pluginKey": "vtiger_workflow_fa_api",
+    "description": "Vtiger workflow is a robust search API tailored for LLM Agents. Get an API key here: https://formaaquae.cleversoft.it",
+    "icon": "https://icon2.cleanpng.com/20181125/cf/kisspng-vtiger-crm-logo-business-brand-customer-relationsh-customer-relationship-management-system-web-devz-5bfb3ea47bf809.4195674915431922285078.jpg",
+    "authConfig": []
+  },
+  {
+    "name": "GO workflow",
+    "pluginKey": "go_workflow_fa_api",
+    "description": "GO workflow is a robust search API tailored for LLM Agents. Get an API key here: https://formaaquae.cleversoft.it",
+    "icon": "https://sp-ao.shortpixel.ai/client/to_auto,q_glossy,ret_img,h_190/https://www.gestionaleopen.org/wp-content/uploads/2022/12/logo-sito-web-1.png",
+    "authConfig": []
+  },
+  {
+    "name": "Create Feedback Workflow API",
+    "pluginKey": "create_feedback_workflow_api",
+    "description": "Create Feedback Workflow API is a robust search API tailored for LLM Agents. Get an API key here: https://formaaquae.cleversoft.it",
+    "icon": "https://uxwing.com/wp-content/themes/uxwing/download/hand-gestures/negative-feedback-icon.png",
+    "authConfig": []
+  },
+  {
+    "name": "Reorder Calculator",
+    "pluginKey": "reorder_calculator",
+    "description": "Calculate optimal reorder quantities and dates based on historical sales data",
+    "icon": "https://i.imgur.com/pVMRjK0.png",
+    "authConfig": []
+  },
+  {
+    "name": "GO Tables Retrieval",
+    "pluginKey": "go_tables_fa_api",
+    "description": "GO Tables Retrieval is a robust search API tailored for LLM Agents. Get an API key here: https://formaaquae.cleversoft.it",
+    "icon": "https://sp-ao.shortpixel.ai/client/to_auto,q_glossy,ret_img,h_190/https://www.gestionaleopen.org/wp-content/uploads/2022/12/logo-sito-web-1.png",
+    "authConfig": []
+  },
+  {
+    "name": "Create Procedure FA",
+    "pluginKey": "create_procedure_fa",
+    "description": "Create Procedure FA is a robust search API tailored for LLM Agents. Get an API key here: https://formaaquae.cleversoft.it",
+    "icon": "https://s3-us-west-2.amazonaws.com/cbi-image-service-prd/original/6926658c-a3d8-44ea-b600-9af7709790da.jpeg",
+    "authConfig": []
   }
 ]

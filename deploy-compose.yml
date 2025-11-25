@@ -1,10 +1,10 @@
 services:
   api:
-    # build:
-    #   context: .
-    #   dockerfile: Dockerfile.multi
-    #   target: api-build
-    image: ghcr.io/danny-avila/librechat-dev-api:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.multi
+      target: api-build
+    # image: ghcr.io/danny-avila/librechat-dev-api:latest
     container_name: LibreChat-API
     ports:
       - 3080:3080
@@ -30,6 +30,25 @@ services:
       - ./images:/app/client/public/images
       - ./uploads:/app/uploads
       - ./logs:/app/api/logs
+      # - ./icons/icon-192x192.png:/app/client/dist/assets/icon-192x192.png
+      # - ./icons/favicon.ico:/app/client/dist/assets/favicon.ico
+      # - ./icons/favicon.ico:/app/client/public/assets/favicon.ico
+      # - ./icons/favicon-16x16.png:/app/client/dist/assets/favicon-16x16.png
+      # - ./icons/favicon-32x32.png:/app/client/dist/assets/favicon-32x32.png
+      # - ./icons/favicon-16x16.png:/app/client/public/assets/favicon-16x16.png
+      # - ./icons/favicon-32x32.png:/app/client/public/assets/favicon-32x32.png
+      # - ./icons/apple-touch-icon.png:/app/client/dist/assets/apple-touch-icon.png
+      # - ./icons/apple-touch-icon.png:/app/client/public/assets/apple-touch-icon.png
+      # - ./icons/apple-touch-icon-180x180.png:/app/client/dist/assets/apple-touch-icon-180x180.png
+      # - ./icons/apple-touch-icon-180x180.png:/app/client/public/assets/apple-touch-icon-180x180.png
+      # - ./icons/android-chrome-192x192.png:/app/client/dist/assets/android-chrome-192x192.png
+      # - ./icons/android-chrome-192x192.png:/app/client/public/assets/android-chrome-192x192.png
+      # - ./icons/android-chrome-512x512.png:/app/client/dist/assets/android-chrome-512x512.png
+      # - ./icons/android-chrome-512x512.png:/app/client/public/assets/android-chrome-512x512.png
+      # - ./icons/web-app-manifest-192x192.png:/app/client/dist/assets/web-app-manifest-192x192.png
+      # - ./icons/web-app-manifest-192x192.png:/app/client/public/assets/web-app-manifest-192x192.png
+      # - ./icons/web-app-manifest-512x512.png:/app/client/dist/assets/web-app-manifest-512x512.png
+      # - ./icons/web-app-manifest-512x512.png:/app/client/public/assets/web-app-manifest-512x512.png
 
   client:
     image: nginx:1.27.0-alpine
@@ -42,6 +61,10 @@ services:
     restart: always
     volumes:
       - ./client/nginx.conf:/etc/nginx/conf.d/default.conf
+      - /etc/letsencrypt/live:/etc/letsencrypt/live
+      - /etc/letsencrypt/archive:/etc/letsencrypt/archive
+      - /etc/letsencrypt/options-ssl-nginx.conf:/etc/letsencrypt/options-ssl-nginx.conf
+      - /etc/letsencrypt/ssl-dhparams.pem:/etc/letsencrypt/ssl-dhparams.pem
   mongodb:
     container_name: chat-mongodb
     # ports:  # Uncomment this to access mongodb from outside docker, not safe in deployment
