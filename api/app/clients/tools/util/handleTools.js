@@ -48,6 +48,7 @@ const {
   GOTablesFAAPI,
   CreateProcedureFA,
   createOpenAIImageTools,
+  ProductReorderScanner,
 } = require('../');
 const { primeFiles: primeCodeFiles } = require('~/server/services/Files/Code/process');
 const { createFileSearchTool, primeFiles: primeSearchFiles } = require('./fileSearch');
@@ -206,6 +207,7 @@ const loadTools = async ({
     procedure_fa_api: ProcedureFAAPI,
     go_tables_fa_api: GOTablesFAAPI,
     create_procedure_fa: CreateProcedureFA,
+    product_reorder_scanner: ProductReorderScanner,
   };
 
   const customConstructors = {

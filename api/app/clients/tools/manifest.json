@@ -270,5 +270,12 @@
     "description": "Create Procedure FA is a robust search API tailored for LLM Agents. Get an API key here: https://formaaquae.cleversoft.it",
     "icon": "https://s3-us-west-2.amazonaws.com/cbi-image-service-prd/original/6926658c-a3d8-44ea-b600-9af7709790da.jpeg",
     "authConfig": []
+  },
+  {
+    "name": "Product Reorder Scanner",
+    "pluginKey": "product_reorder_scanner",
+    "description": "Scan product inventory levels and sales data to identify items that need to be reordered",
+    "icon": "https://i.imgur.com/pVMRjK0.png",
+    "authConfig": []
   }
 ]

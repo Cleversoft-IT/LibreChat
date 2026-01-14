@@ -25,6 +25,7 @@ const ReorderCalculator = require('./structured/ReorderCalculator');
 const ProcedureFAAPI = require('./structured/ProcedureFA');
 const GOTablesFAAPI = require('./structured/GOTablesFA');
 const CreateProcedureFA = require('./structured/CreateProcedureFA');
+const ProductReorderScanner = require('./structured/ProductReorderScanner');
 
 module.exports = {
   ...manifest,
@@ -53,4 +54,5 @@ module.exports = {
   GOTablesFAAPI,
   createOpenAIImageTools,
   CreateProcedureFA,
+  ProductReorderScanner,
 };
