@@ -1,4 +1,4 @@
-services:
+LibreChatservices:
   api:
     build:
       context: .
@@ -9,7 +9,7 @@ services:
     ports:
       - 3080:3080
     depends_on:
-      - mongodb
+      - mongodbghcr.io/danny-avila/librechat-dev-api:latest
       - rag_api
     restart: always
     extra_hosts:
@@ -76,7 +76,7 @@ services:
     command: mongod --noauth
   meilisearch:
     container_name: chat-meilisearch
-    image: getmeili/meilisearch:v1.12.3
+    image: getmeili/meilisearch:v1.35.1
     restart: always
     # ports: # Uncomment this to access meilisearch from outside docker
     #   - 7700:7700 # if exposing these ports, make sure your master key is not the default value
@@ -86,7 +86,7 @@ services:
       - MEILI_HOST=http://meilisearch:7700
       - MEILI_NO_ANALYTICS=true
     volumes:
-      - ./meili_data_v1.12:/meili_data
+      - ./meili_data_v1.35.1:/meili_data
   vectordb:
     image: pgvector/pgvector:0.8.0-pg15-trixie
     environment:
@@ -97,7 +97,7 @@ services:
     volumes:
       - pgdata2:/var/lib/postgresql/data
   rag_api:
-    image: ghcr.io/danny-avila/librechat-rag-api-dev-lite:latest
+    image: registry.librechat.ai/danny-avila/librechat-rag-api-dev-lite:latest
     environment:
       - DB_HOST=vectordb
       - RAG_PORT=${RAG_PORT:-8000}
