@@ -27,10 +27,10 @@ class ProcedureFAAPI extends RetrievalFAAPI {
     // Formato della Risposta:
     // - Il tool restituirà le informazioni pertinenti in formato testuale
     // - Se necessario, includerà riferimenti a documenti specifici
-    // - Le immagini nelle risposte saranno automaticamente scaricate e visualizzate
+    // - Le immagini nelle risposte (in formato di link/url) vanno visualizzate nella conversazione
     `;
     
-    this.description = `Use this tool to access and retrieve information about company procedures and knowledge stored in Zilliz. Images in responses are automatically processed and displayed.`;
+    this.description = `Use this tool to access and retrieve information about company procedures and knowledge stored in Zilliz. Images in responses (as url) MUST BE displayed in chat response.`;
 
     // Extend the schema to add the knowledge_id specific to this implementation
     this.schema = this.schema.extend({

@@ -64,7 +64,7 @@ class ProductReorderScanner extends Tool {
         historicalMonths: number (optional, default=12, months of sales history to analyze),
         leadTime: number (days, optional, default=80),
         serviceLevel: number (0-1, optional, default=0.95),
-        annualGrowth: number (decimal, e.g. 0.10 for +10% yoy, optional, default=0),
+        annualGrowth: number (decimal, e.g. 0.10 for +10% yoy, optional, default=0.15),
         minOperationalStock: number (optional, default=5),
         weightingFactor: number (0-1, optional, default=0.85),
         excludeCustomers: ["00000638", "00001680", ...] (optional, array of customer codes to exclude from sales analysis),
@@ -79,10 +79,10 @@ class ProductReorderScanner extends Tool {
       productCodes: z.array(z.string()).optional().describe('Array of product codes to scan. If not provided, will scan all products matching productPattern'),
       productPattern: z.string().optional().default('VS%').describe('SQL LIKE pattern for auto-fetching product codes when productCodes not provided'),
       warehouse: z.string().optional().default('rogno').describe('Warehouse name (default: rogno)'),
-      historicalMonths: z.number().optional().default(12).describe('Number of months of sales history to analyze'),
+      historicalMonths: z.number().optional().default(36).describe('Number of months of sales history to analyze'),
       leadTime: z.number().optional().default(80).describe('Lead time in days'),
       serviceLevel: z.number().min(0).max(1).optional().default(0.95).describe('Service level (0-1)'),
-      annualGrowth: z.number().optional().default(0).describe('Annual growth rate (decimal)'),
+      annualGrowth: z.number().optional().default(0.15).describe('Annual growth rate (decimal)'),
       minOperationalStock: z.number().optional().default(5).describe('Minimum operational stock level'),
       weightingFactor: z.number().min(0).max(1).optional().default(0.85).describe('Weighting factor for recent data'),
       excludeCustomers: z.array(z.string()).optional().default(['00000638', '00001680', '00000656']).describe('Array of customer codes to exclude from sales analysis (default: excludes 00000638, 00001680, 00000656)'),
@@ -218,20 +218,20 @@ class ProductReorderScanner extends Tool {
    * Fetch incoming orders for a product
    */
   async fetchIncomingOrders(productCode) {
-    const query = `
-      SELECT
-        oar.PROGRESSIVO,
-        oar.RIGA,
-        oar.QUANTITA,
-        oar.DATA_CONSEGNA,
-        DATE_FORMAT(oar.DATA_CONSEGNA, '%Y-%m') AS mese
-      FROM oar
-      JOIN oat ON oar.PROGRESSIVO = oat.PROGRESSIVO
-      WHERE
-        oar.ART_CODICE = '${productCode}'
-        AND (oar.QUANTITA - oar.QUANTITA_EVASA) > 0
-        AND oat.TMA_CODICE != 'OEM'
-    `;
+  const query = `
+    SELECT
+      oar.PROGRESSIVO,
+      oar.RIGA,
+      (oar.QUANTITA - oar.QUANTITA_EVASA) AS QTA_RESIDUA,
+      oar.DATA_CONSEGNA,
+      DATE_FORMAT(oar.DATA_CONSEGNA, '%Y-%m') AS mese
+    FROM oar
+    JOIN oat ON oar.PROGRESSIVO = oat.PROGRESSIVO
+    WHERE
+      oar.ART_CODICE = '${productCode}'
+      AND (oar.QUANTITA - oar.QUANTITA_EVASA) > 0
+      AND oat.TMA_CODICE != 'OEM'
+  `;
 
     const results = await this.executeSQLQuery(query);
     
@@ -239,7 +239,7 @@ class ProductReorderScanner extends Tool {
     const ordersByMonth = {};
     results.forEach(row => {
       const month = row.mese;
-      const quantity = parseFloat(row.QUANTITA) || 0;
+      const quantity = parseFloat(row.QTA_RESIDUA) || 0;
       if (month) {
         ordersByMonth[month] = (ordersByMonth[month] || 0) + quantity;
       }
@@ -409,12 +409,19 @@ class ProductReorderScanner extends Tool {
     // Calculate reorder point
     const reorderPoint = totalForecast + finalSafetyStock;
 
-    // Calculate expected incoming stock (all incoming orders, not just within lead time)
     let incomingStock = 0;
     if (incomingOrders && incomingOrders.length > 0) {
-      // Sum ALL incoming orders, including those arriving after the lead time
+      const today = new Date();
+      const cutoff = new Date(today);
+      cutoff.setDate(cutoff.getDate() + Math.ceil(leadTime));
+
       incomingStock = incomingOrders.reduce((sum, order) => {
-        return sum + order.quantity;
+        // order.month è "YYYY-MM"
+        const [y, m] = order.month.split('-').map(n => parseInt(n, 10));
+        const orderDate = new Date(y, m - 1, 1); // primo giorno del mese
+
+        // includo solo se il mese è entro il lead time (approssimazione mensile)
+        return orderDate <= cutoff ? sum + order.quantity : sum;
       }, 0);
     }
 
@@ -426,8 +433,17 @@ class ProductReorderScanner extends Tool {
 
     // Calculate reorder date
     const today = new Date();
-    const reorderDate = new Date(today);
-    reorderDate.setDate(reorderDate.getDate() + Math.ceil(leadTime));
+    let reorderDate;
+
+    if (reorderQuantity > 0) {
+      // Da ordinare oggi
+      reorderDate = today;
+    } else {
+      // Non urgente: per coerenza (e per non creare filtri sbagliati) metto comunque una data futura
+      // equivalente all’arrivo se ordinassi oggi (puoi anche mettere null)
+      reorderDate = new Date(today);
+      reorderDate.setDate(reorderDate.getDate() + Math.ceil(leadTime));
+    }
 
     return {
       reorderPoint: Math.ceil(reorderPoint),

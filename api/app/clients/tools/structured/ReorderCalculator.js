@@ -84,7 +84,7 @@ class ReorderCalculator extends Tool {
       leadTime: z.number().optional().default(80),
       serviceLevel: z.number().min(0).max(1).optional().default(0.95),
       onHandStock: z.number().optional().default(0),
-      annualGrowth: z.number().optional().default(0)
+      annualGrowth: z.number().optional().default(0.15)
         .describe('Decimal growth rate per year, e.g. 0.10 => +10% yoy, -0.05 => -5%.'),
       safetyStock: z.number().optional(),
       minOperationalStock: z.number().optional().default(5).describe('Minimum operational stock level'),
