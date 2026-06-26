@@ -1,8 +1,8 @@
 // ReorderCalculator.js
 // A tool for calculating reorder quantities and dates using weighted historical data
 const { z } = require('zod');
-const { Tool } = require('@langchain/core/tools');
-const { logger } = require('~/config');
+const { Tool } = require('@librechat/agents/langchain/tools');
+const { logger } = require('@librechat/data-schemas');
 
 // Z-score lookup table for service levels
 const zTable = {

@@ -1,8 +1,8 @@
 const axios = require('axios').default;
 
 const { z } = require('zod');
-const { StructuredTool } = require('@langchain/core/tools');
-const { logger } = require('~/config');
+const { StructuredTool } = require('@librechat/agents/langchain/tools');
+const { logger } = require('@librechat/data-schemas');
 
 class ExternalFA extends StructuredTool {
   constructor(fields) {
