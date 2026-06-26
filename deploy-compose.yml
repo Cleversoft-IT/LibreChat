@@ -14,6 +14,9 @@ services:
     restart: always
     extra_hosts:
     - "host.docker.internal:host-gateway"
+    networks:
+      default: {}
+      codeapi-net: {}
     env_file:
       - .env
     environment:
@@ -31,6 +34,16 @@ services:
       - https_proxy=${https_proxy:-}
       - no_proxy=${no_proxy:-localhost,127.0.0.1,::1},${NO_PROXY:-},mongodb,chat-mongodb,meilisearch,chat-meilisearch,rag_api,vectordb,host.docker.internal
       - ADMIN_PANEL_URL=${ADMIN_PANEL_URL:-http://admin.localhost}
+      # Code Interpreter (self-hosted ClickHouse code-interpreter). Reached over
+      # the shared external `codeapi-net` network at alias `codeapi`; auth is a
+      # JWT signed with the EdDSA private key below. See deploy/codeapi/README.md.
+      - LIBRECHAT_CODE_BASEURL=${LIBRECHAT_CODE_BASEURL:-http://codeapi:3112/v1}
+      - CODEAPI_AUTH_PROVIDER=${CODEAPI_AUTH_PROVIDER:-librechat-jwt}
+      - CODEAPI_JWT_ALGORITHM=${CODEAPI_JWT_ALGORITHM:-EdDSA}
+      - CODEAPI_JWT_ISSUER=${CODEAPI_JWT_ISSUER:-librechat}
+      - CODEAPI_JWT_AUDIENCE=${CODEAPI_JWT_AUDIENCE:-codeapi}
+      - CODEAPI_JWT_KID=${CODEAPI_JWT_KID:-lc-codeapi-1}
+      - CODEAPI_JWT_PRIVATE_KEY_BASE64=${CODEAPI_JWT_PRIVATE_KEY_BASE64:-}
     volumes:
       - type: bind
         source: ./librechat.yaml
@@ -59,20 +72,23 @@ services:
       # - ./icons/web-app-manifest-512x512.png:/app/client/public/assets/web-app-manifest-512x512.png
       - ./skill:/app/skill
 
-  admin-panel:
-    image: registry.librechat.ai/clickhouse/librechat-admin-panel:latest
-    container_name: admin-panel
-    depends_on:
-      - api
-    restart: always
-    environment:
-      - PORT=3000
-      # Plain expansion (not :?) so `docker compose down`/`pull` still run when this is unset.
-      # The panel itself refuses to start without it; set ADMIN_PANEL_SESSION_SECRET in .env.
-      - SESSION_SECRET=${ADMIN_PANEL_SESSION_SECRET}
-      - API_SERVER_URL=http://api:3080
-      - VITE_API_BASE_URL=${DOMAIN_CLIENT:-http://localhost}
-      - SESSION_COOKIE_SECURE=${ADMIN_PANEL_SESSION_COOKIE_SECURE:-false}
+  # Admin Panel (v0.8.7) — not adopted yet. To enable: uncomment this service,
+  # re-add `- admin-panel` to the client depends_on below, and set
+  # ADMIN_PANEL_SESSION_SECRET in .env.
+  # admin-panel:
+  #   image: registry.librechat.ai/clickhouse/librechat-admin-panel:latest
+  #   container_name: admin-panel
+  #   depends_on:
+  #     - api
+  #   restart: always
+  #   environment:
+  #     - PORT=3000
+  #     # Plain expansion (not :?) so `docker compose down`/`pull` still run when this is unset.
+  #     # The panel itself refuses to start without it; set ADMIN_PANEL_SESSION_SECRET in .env.
+  #     - SESSION_SECRET=${ADMIN_PANEL_SESSION_SECRET}
+  #     - API_SERVER_URL=http://api:3080
+  #     - VITE_API_BASE_URL=${DOMAIN_CLIENT:-http://localhost}
+  #     - SESSION_COOKIE_SECURE=${ADMIN_PANEL_SESSION_COOKIE_SECURE:-false}
 
   client:
     image: nginx:1.27.0-alpine
@@ -82,7 +98,6 @@ services:
       - 443:443
     depends_on:
       - api
-      - admin-panel
     restart: always
     volumes:
       - ./client/nginx.conf:/etc/nginx/conf.d/default.conf
@@ -134,3 +149,9 @@ services:
 
 volumes:
   pgdata2:
+
+networks:
+  # Shared bridge to the self-hosted code-interpreter stack (alias: codeapi).
+  # Create once with: docker network create codeapi-net
+  codeapi-net:
+    external: true
