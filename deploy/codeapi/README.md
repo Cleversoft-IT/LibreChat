@@ -88,6 +88,29 @@ If exec calls fail with 401/403, the JWT did not validate — check that
 `issuer`, `audience` and `kid` are identical on both sides and that the public
 key matches the private key.
 
+## Storage retention (resource growth)
+
+Most resources are self-cleaning: sandbox workspaces are reaped on an interval
+(`SANDBOX_WORKSPACE_REAPER_MAX_AGE_SECONDS`, default 1h), Redis exec/tool state
+and tool-call sessions have TTLs, and per-job sandboxes are ephemeral.
+
+The exception is **MinIO object storage**: generated files are only removed on
+explicit delete (when a user deletes the file/message in LibreChat). There is no
+built-in expiry, so orphaned files can accumulate. A bucket lifecycle rule
+expires objects after 30 days as a safety net:
+
+```bash
+docker run --rm --network code-interpreter_default --entrypoint sh minio/mc -c '
+  mc alias set ci http://minio:9000 minioadmin minioadmin
+  mc ilm rule add --expire-days 30 ci/test-bucket
+  mc ilm rule ls ci/test-bucket'
+```
+
+This rule lives in the bucket metadata (the `minio_data` volume) and survives
+restarts; re-apply it only if that volume is recreated. Note: it expires *every*
+object older than 30 days, including files still referenced by old conversations
+(the message keeps its reference but the file becomes unavailable).
+
 ## Security notes
 
 - Bind the interpreter's published port to localhost only
