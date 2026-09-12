@@ -24,6 +24,7 @@ services:
       - NODE_ENV=production
       - MONGO_URI=mongodb://mongodb:27017/LibreChat
       - MEILI_HOST=http://meilisearch:7700
+      - LIBRECHAT_TEMP_CREDENTIALS_PATH=/app/data/.env.temp
       - RAG_PORT=${RAG_PORT:-8000}
       - RAG_API_URL=http://rag_api:${RAG_PORT:-8000}
       - PROXY=${PROXY:-}
@@ -71,6 +72,7 @@ services:
       # - ./icons/web-app-manifest-512x512.png:/app/client/dist/assets/web-app-manifest-512x512.png
       # - ./icons/web-app-manifest-512x512.png:/app/client/public/assets/web-app-manifest-512x512.png
       - ./skill:/app/skill
+      - librechat-data:/app/data
 
   # Admin Panel (v0.8.7) — not adopted yet. To enable: uncomment this service,
   # re-add `- admin-panel` to the client depends_on below, and set
@@ -149,6 +151,7 @@ services:
 
 volumes:
   pgdata2:
+  librechat-data:
 
 networks:
   # Shared bridge to the self-hosted code-interpreter stack (alias: codeapi).
