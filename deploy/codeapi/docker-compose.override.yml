@@ -1,0 +1,59 @@
+# LibreChat integration override (managed via LibreChat deploy/codeapi).
+# - Bridges the api gateway to LibreChat over the shared external `codeapi-net`
+#   network; LibreChat reaches it at http://codeapi:3112/v1.
+# - restart: always on every service so the stack survives host reboots
+#   (upstream only sets it on sandbox-runner).
+# - Clock-drift recovery: the microVM guest clock drifts behind the host and
+#   upstream's healthcheck marks sandbox-runner unhealthy past 10s of skew
+#   (SANDBOX_RUNNER_CLOCK_SKEW_LIVENESS_LIMIT_SECONDS). Docker never restarts an
+#   unhealthy container by itself, so the autoheal sidecar restarts containers
+#   labelled autoheal=true. Jitter is passed explicitly (compose does not) and
+#   set to 0 for a single-host deployment.
+networks:
+  codeapi-net:
+    external: true
+
+services:
+  api:
+    restart: always
+    networks:
+      default: {}
+      codeapi-net:
+        aliases:
+          - codeapi
+  service-worker:
+    restart: always
+  egress_gateway:
+    restart: always
+  tool_call_server:
+    restart: always
+  sandbox-runner:
+    restart: always
+    # Guest DNS over TCP: libkrun 1.19 TSI networking refuses connected UDP
+    # sockets (connect()+send() -> ECONNREFUSED) while plain sendto() works.
+    # glibc, c-ares and Bun resolve through connected UDP, so inside the
+    # microVM every service name (egress_gateway, file_server) fails to resolve
+    # and generated files are never uploaded ("artifact_delivery_failed").
+    # Docker writes this into the runner's /etc/resolv.conf and the launcher
+    # forwards it to the guest resolver (upstream #152/#157).
+    dns_opt:
+      - use-vc
+    environment:
+      - SANDBOX_RUNNER_CLOCK_SKEW_LIVENESS_JITTER_SECONDS=${SANDBOX_RUNNER_CLOCK_SKEW_LIVENESS_JITTER_SECONDS:-0}
+    labels:
+      - autoheal=true
+  file_server:
+    restart: always
+  redis:
+    restart: always
+  minio:
+    restart: always
+  autoheal:
+    image: willfarrell/autoheal:latest
+    container_name: codeapi-autoheal
+    restart: always
+    environment:
+      - AUTOHEAL_CONTAINER_LABEL=autoheal
+      - AUTOHEAL_INTERVAL=5
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro

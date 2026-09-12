@@ -1,3 +1,4 @@
 keys/
 *.pem
 .env
+!docker-compose.override.yml

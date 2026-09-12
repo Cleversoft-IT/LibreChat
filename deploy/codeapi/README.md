@@ -135,6 +135,35 @@ docker rm -f autoheal-probe
 
 Manual relief if it ever happens again: `docker compose restart sandbox-runner`.
 
+## Guest DNS (why generated files used to vanish: `artifact_delivery_failed`)
+
+Since upstream #152/#157 the launcher no longer pins service IPs before boot: the
+runner's `/etc/resolv.conf` (Docker's embedded resolver `127.0.0.11`) is handed to
+the microVM on the kernel command line and the guest resolves `egress_gateway` /
+`file_server` by name. With libkrun 1.19 TSI networking a **connected UDP socket**
+(`connect()` + `send()`) is refused with `ECONNREFUSED` while plain `sendto()`
+works, and glibc, c-ares and Bun all resolve over connected UDP. Symptoms: every
+`/exec` succeeds but `files` is empty, the response carries
+`"artifact_delivery":{"code":"artifact_delivery_failed",...}`, the runner logs
+`Error uploading file ... Unable to connect. Is the computer able to access the
+url?`, and LibreChat's `create_file` / `execute_code` outputs never become
+attachments (`Error reading sandbox file ... No such file or directory`).
+
+The override sets `dns_opt: [use-vc]` on `sandbox-runner`: Docker writes
+`options use-vc` into the runner's `resolv.conf`, the launcher forwards it, and the
+guest resolves over TCP (Docker's embedded DNS answers on TCP too). Verify after
+any runner rebuild or libkrun bump:
+
+```bash
+docker exec sandbox-runner grep '^options' /etc/resolv.conf          # contains use-vc
+docker exec sandbox-runner sh -c 'tr "\0" "\n" < /proc/1/environ | grep SANDBOX_RESOLV_CONF'
+# An /exec that writes /mnt/data/x.txt must return files:[{id,name,...}] and no artifact_delivery.
+```
+
+To probe the guest directly, boot a throwaway microVM whose stdin is a script
+(`LAUNCHER_EXEC=/bin/bash`, same image, same network); `getent hosts egress_gateway`
+must succeed there.
+
 ## Storage retention (resource growth)
 
 Most resources are self-cleaning: sandbox workspaces are reaped on an interval
