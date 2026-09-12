@@ -192,3 +192,4 @@ scripts/activity-labels/results/
 
 # Local database dumps (deploy maintenance)
 backups/
+librechat.yaml.bak*
