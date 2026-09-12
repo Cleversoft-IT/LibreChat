@@ -49,22 +49,30 @@ into the `api` service.
 ```bash
 git clone https://github.com/ClickHouse/code-interpreter.git
 cd code-interpreter
-
-# Pre-build the language runtimes (Python/Node/Bun) into ./data/pkgs.
-# This is mounted read-only into the sandbox; the stack will not run without it.
-./build-packages.sh
+git checkout 9d3936fa73e1b447f2e9a3a3961cdef8b411da18   # pinned; upstream has no tags yet
 
 # Production env: copy the template and fill in the secrets.
 cp /path/to/LibreChat/deploy/codeapi/codeapi.env.example .env
 #  - paste block (2) from gen-jwt-keys.sh (CODEAPI_JWT_PUBLIC_KEY)
-#  - CODEAPI_INTERNAL_SERVICE_TOKEN=$(openssl rand -hex 32)
-#  - CODEAPI_EGRESS_GRANT_SECRET=$(openssl rand -hex 32)
+#  - CODEAPI_INTERNAL_SERVICE_TOKEN / CODEAPI_EGRESS_GRANT_SECRET / CODEAPI_BRIDGE_TOKEN:
+#    openssl rand -hex 32 each
+#  - CODEAPI_EXECUTION_MANIFEST_PRIVATE_KEY / SANDBOX_EXECUTION_MANIFEST_PUBLIC_KEY:
+#    see the comment in codeapi.env.example
 
-docker compose up --build -d
+# Compose override: shared network alias, restart policies, clock-drift autoheal.
+cp /path/to/LibreChat/deploy/codeapi/docker-compose.override.yml .
+
+docker compose build   # long: the KVM runner image bakes Python/Node/Bun runtimes
+docker compose up -d
 ```
 
-> Pinned/known-good upstream commit at integration time:
-> `3fa1f6cd6897e60be32b09dae132ae656ccff11d`.
+The KVM runner target (`sandbox-runner-true`) bakes the language runtimes into the
+image; `./build-packages.sh` / `./data/pkgs` are only needed for the non-KVM
+(`KVM_ENABLED=false`) path.
+
+> Pinned upstream commit: `9d3936fa73e1b447f2e9a3a3961cdef8b411da18` (2026-09-12).
+> Previous pin `3fa1f6cd6897e60be32b09dae132ae656ccff11d` had no clock-drift
+> detection (see below).
 
 ### 4. (Re)start LibreChat
 
@@ -87,6 +95,45 @@ curl -fsS http://localhost:3112/v1/health
 If exec calls fail with 401/403, the JWT did not validate — check that
 `issuer`, `audience` and `kid` are identical on both sides and that the public
 key matches the private key.
+
+## Guest clock drift (why executions used to die with "not valid yet")
+
+The sandbox API validates each signed execution manifest **inside the libkrun
+microVM**, rejecting it when `iat > now + 30s` (hard-coded tolerance). The guest
+has no time sync, so its clock drifts behind the host by roughly 1-2 s/day; after
+~3 weeks every `/exec` fails with
+`502 {"error":"sandbox_execution_failed","message":"Execution manifest is not valid yet"}`
+while `/v1/health` still reports OK.
+
+Upstream does not fix the drift, it detects it: `sandbox-runner-healthcheck.sh`
+compares the guest's HTTP `Date` header with the host clock and marks the
+container unhealthy past `SANDBOX_RUNNER_CLOCK_SKEW_LIVENESS_LIMIT_SECONDS`
+(10). Docker never restarts an unhealthy container on its own, hence the
+`autoheal` sidecar in `docker-compose.override.yml` (restarts containers labelled
+`autoheal=true`). Expected cadence: one ~30 s restart of the runner every ~6-7
+days; executions keep working during the ~5 min it takes the check to flip
+(10 s of skew is well under the 30 s tolerance).
+
+Measure the skew (the healthcheck script prints nothing on success):
+
+```bash
+G=$(curl -sS -D - -o /dev/null http://localhost:2000/api/v2/health | grep -i '^date:' | cut -d' ' -f2-)
+echo "skew: $(( $(date -u +%s) - $(date -u -d "$G" +%s) )) s"
+```
+
+Verify the recovery path without waiting a week (a throwaway container with a
+failing healthcheck must be restarted by autoheal within seconds; use
+`.State.StartedAt`, `docker events --filter event=restart` or the autoheal logs,
+never `RestartCount`, which `docker restart` resets):
+
+```bash
+docker run -d --name autoheal-probe --label autoheal=true \
+  --health-cmd 'exit 1' --health-interval 2s --health-retries 1 alpine sleep 600
+sleep 15; docker inspect -f '{{.State.StartedAt}}' autoheal-probe; docker logs codeapi-autoheal | tail -2
+docker rm -f autoheal-probe
+```
+
+Manual relief if it ever happens again: `docker compose restart sandbox-runner`.
 
 ## Storage retention (resource growth)
 
