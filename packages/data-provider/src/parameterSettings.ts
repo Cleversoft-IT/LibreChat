@@ -1,3 +1,4 @@
+import type { ResponsesApiRouting } from './types';
 import {
   Verbosity,
   ImageDetail,
@@ -16,8 +17,10 @@ import {
   BedrockProviders,
   anthropicSettings,
 } from './types';
+import { hasAlwaysOnThinking, hasBetweenToolsThinkingFloor, supportsPromptCache } from './bedrock';
 import { SettingDefinition, SettingsConfiguration } from './generate';
-import { supportsPromptCache } from './bedrock';
+import { resolveEffectiveUseResponsesApi } from './file-config';
+import { gpt6Tier } from './families';
 
 // Base definitions
 const baseDefinitions: Record<string, SettingDefinition> = {
@@ -550,6 +553,7 @@ const anthropic: Record<string, SettingDefinition> = {
       [ThinkingDisplay.auto]: 'com_ui_auto',
       [ThinkingDisplay.summarized]: 'com_ui_summarized',
       [ThinkingDisplay.omitted]: 'com_ui_omitted',
+      [ThinkingDisplay.updates]: 'com_ui_updates',
     },
     optionType: 'model',
     columnSpan: 4,
@@ -1190,6 +1194,48 @@ export const paramSettings: Record<string, SettingsConfiguration | undefined> = 
   [EModelEndpoint.google]: googleConfig,
 };
 
+/**
+ * Maps effective backend param names for OpenAI-compatible/Azure endpoints (as deleted from
+ * `llmConfig` via `dropParams`, e.g. `maxTokens`) to their corresponding UI/conversation keys
+ * (e.g. `max_tokens`). Native providers (anthropic, google, bedrock, ...) already render these
+ * same camelCase names as their UI key (e.g. `topP`), so this alias must only be applied to
+ * OpenAI-compatible parameter sets — see `resolveDropParamsUIKeys`.
+ */
+const dropParamsBackendToUIKey: Record<string, string> = {
+  maxTokens: 'max_tokens',
+  topP: 'top_p',
+  frequencyPenalty: 'frequency_penalty',
+  presencePenalty: 'presence_penalty',
+};
+
+/** Endpoint keys whose parameter settings render the OpenAI-compatible (snake_case) UI keys. */
+const openAILikeParamEndpointKeys: Set<string> = new Set([
+  EModelEndpoint.openAI,
+  EModelEndpoint.azureOpenAI,
+  EModelEndpoint.custom,
+  Providers.OPENROUTER,
+]);
+
+/**
+ * Normalizes an admin-configured `dropParams` list into the UI/conversation keys used to hide
+ * the matching controls in the settings panels. `endpointKey` should be the same key used to
+ * resolve the panel's parameter settings (e.g. `overriddenEndpointKey`); the backend-name alias
+ * is only applied for OpenAI-compatible endpoints, since native providers (anthropic, google,
+ * bedrock, ...) already use these backend names as their UI key.
+ */
+export function resolveDropParamsUIKeys(
+  dropParams: string[] | undefined,
+  endpointKey: string,
+): Set<string> {
+  if (!dropParams || dropParams.length === 0) {
+    return new Set();
+  }
+  if (!openAILikeParamEndpointKeys.has(endpointKey)) {
+    return new Set(dropParams);
+  }
+  return new Set(dropParams.map((param) => dropParamsBackendToUIKey[param] ?? param));
+}
+
 const openAIColumns = {
   col1: openAICol1,
   col2: openAICol2,
@@ -1273,9 +1319,67 @@ export function applyModelAwareDefaults(
   settings: SettingsConfiguration,
   endpoint: string,
   model?: string,
+  responsesApiRouting?: ResponsesApiRouting,
 ): SettingsConfiguration {
   if (!model) {
     return settings;
+  }
+  if (/^grok-4[.-]7(?:$|[-:])/.test(model.split('/').pop() ?? '')) {
+    return settings.map((setting) =>
+      setting.key === 'reasoning_effort'
+        ? {
+            ...setting,
+            options: [
+              ReasoningEffort.unset,
+              ReasoningEffort.low,
+              ReasoningEffort.medium,
+              ReasoningEffort.high,
+              ReasoningEffort.xhigh,
+            ],
+          }
+        : setting,
+    );
+  }
+  const tier = gpt6Tier(model);
+  if (tier === 'sol' || tier === 'luna') {
+    return settings.map((setting) => {
+      if (setting.key === 'reasoning_effort') {
+        return {
+          ...setting,
+          options: setting.options?.filter((effort) => effort !== ReasoningEffort.minimal),
+        };
+      }
+      /** Match the native backend's unset default without writing into stored
+       * settings. Explicit false still overrides this rendered default. */
+      if (setting.key === 'useResponsesApi') {
+        const route = (value?: boolean) =>
+          resolveEffectiveUseResponsesApi({ endpoint, model, routing: responsesApiRouting, value });
+        return {
+          ...setting,
+          default: route() ?? false,
+          enumMappings: { true: route(true) ?? true, false: route(false) ?? false },
+        };
+      }
+      return setting;
+    });
+  }
+  if (hasAlwaysOnThinking(model)) {
+    return settings.filter(
+      (setting) =>
+        !['thinking', 'thinkingBudget', 'temperature', 'topP', 'topK'].includes(setting.key),
+    );
+  }
+  /** Sonnet 5.5+ keeps the toggle: "off" maps to its `between_tools` floor. */
+  if (hasBetweenToolsThinkingFloor(model)) {
+    return settings
+      .map((setting) =>
+        setting.key === 'thinking'
+          ? { ...setting, description: 'com_endpoint_anthropic_thinking_between_tools' }
+          : setting,
+      )
+      .filter(
+        (setting) => !['thinkingBudget', 'temperature', 'topP', 'topK'].includes(setting.key),
+      );
   }
   const modelAwareSettings =
     endpoint === EModelEndpoint.google
